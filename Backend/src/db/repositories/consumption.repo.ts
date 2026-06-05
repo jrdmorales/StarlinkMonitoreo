@@ -1,0 +1,79 @@
+import { eq, and, gte, desc, max } from 'drizzle-orm';
+import { db } from '../client.js';
+import { consumptionLogs, type ConsumptionLogRow } from '../schema.js';
+
+interface InsertConsumptionData {
+  antennaId:  number;
+  sampledAt:  Date;
+  cycleStart: string; // YYYY-MM-DD
+  cycleEnd:   string; // YYYY-MM-DD
+  consumedGb: number;
+  limitGb:    number;
+  usagePct:   number;
+}
+
+/**
+ * Inserta un snapshot de consumo.
+ * Si ya existe el mismo (antennaId, sampledAt), lo ignora silenciosamente.
+ * Retorna `inserted: true` solo cuando se persistió un registro nuevo.
+ */
+export async function insertConsumptionLog(
+  data: InsertConsumptionData,
+): Promise<{ inserted: boolean }> {
+  const rows = await db
+    .insert(consumptionLogs)
+    .values({
+      antennaId:  data.antennaId,
+      sampledAt:  data.sampledAt,
+      cycleStart: data.cycleStart,
+      cycleEnd:   data.cycleEnd,
+      consumedGb: String(data.consumedGb),
+      limitGb:    data.limitGb,
+      usagePct:   String(data.usagePct),
+    })
+    .onConflictDoNothing()
+    .returning({ id: consumptionLogs.id });
+
+  return { inserted: rows.length > 0 };
+}
+
+/** El timestamp del último fetch exitoso en toda la tabla (null si no hay datos) */
+export async function getLastFetchedAt(): Promise<Date | null> {
+  const [row] = await db
+    .select({ value: max(consumptionLogs.sampledAt) })
+    .from(consumptionLogs);
+  return row?.value ?? null;
+}
+
+/** El snapshot más reciente de una antena (null si nunca se ha hecho fetch) */
+export async function getLatestConsumptionByAntenna(
+  antennaId: number,
+): Promise<ConsumptionLogRow | null> {
+  const [row] = await db
+    .select()
+    .from(consumptionLogs)
+    .where(eq(consumptionLogs.antennaId, antennaId))
+    .orderBy(desc(consumptionLogs.sampledAt))
+    .limit(1);
+  return row ?? null;
+}
+
+/**
+ * Todos los snapshots de una antena dentro del ciclo activo, en orden cronológico.
+ * Usado para construir el historial de gráficos.
+ */
+export async function getConsumptionInCycle(
+  antennaId:  number,
+  cycleStart: Date,
+): Promise<ConsumptionLogRow[]> {
+  return db
+    .select()
+    .from(consumptionLogs)
+    .where(
+      and(
+        eq(consumptionLogs.antennaId, antennaId),
+        gte(consumptionLogs.sampledAt, cycleStart),
+      ),
+    )
+    .orderBy(consumptionLogs.sampledAt);
+}
