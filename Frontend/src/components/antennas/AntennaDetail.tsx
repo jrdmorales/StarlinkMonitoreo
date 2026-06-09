@@ -16,8 +16,7 @@ interface Props {
 type SendState = 'idle' | 'sending' | 'ok' | 'error';
 
 export default function AntennaDetail({ antenna, history, loading }: Props) {
-  const [alertState,  setAlertState ] = useState<SendState>('idle');
-  const [reportState, setReportState] = useState<SendState>('idle');
+  const [alertState, setAlertState] = useState<SendState>('idle');
   const isAdmin = !!token.get();
 
   async function sendAlert() {
@@ -30,19 +29,6 @@ export default function AntennaDetail({ antenna, history, loading }: Props) {
     } catch {
       setAlertState('error');
       setTimeout(() => setAlertState('idle'), 3000);
-    }
-  }
-
-  async function sendReport() {
-    if (!antenna) return;
-    setReportState('sending');
-    try {
-      await api.post(`/admin/antennas/${antenna.code}/send-report`, {});
-      setReportState('ok');
-      setTimeout(() => setReportState('idle'), 3000);
-    } catch {
-      setReportState('error');
-      setTimeout(() => setReportState('idle'), 3000);
     }
   }
   if (!antenna) {
@@ -106,20 +92,6 @@ export default function AntennaDetail({ antenna, history, loading }: Props) {
           >
             <Icons.alert size={13} />
             {alertState === 'sending' ? 'Enviando...' : alertState === 'ok' ? 'Alerta enviada ✓' : alertState === 'error' ? 'Error al enviar' : 'Enviar alerta'}
-          </button>
-          <button
-            onClick={sendReport}
-            disabled={reportState === 'sending'}
-            style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              padding: '7px 10px', borderRadius: 8, border: '1px solid var(--line)', cursor: 'pointer',
-              background: reportState === 'ok' ? 'var(--ok-bg, #f0fdf4)' : reportState === 'error' ? 'var(--risk-bg, #fef2f2)' : 'var(--panel)',
-              color: reportState === 'ok' ? 'var(--ok, #16a34a)' : reportState === 'error' ? 'var(--risk)' : 'var(--text)',
-              fontSize: 12, fontWeight: 600, opacity: reportState === 'sending' ? 0.6 : 1,
-            }}
-          >
-            <Icons.chart size={13} />
-            {reportState === 'sending' ? 'Enviando...' : reportState === 'ok' ? 'Reporte enviado ✓' : reportState === 'error' ? 'Error al enviar' : 'Enviar reporte'}
           </button>
         </div>
       )}

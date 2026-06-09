@@ -4,6 +4,10 @@ import { z } from 'zod';
 import { requireAuth } from '../../middleware/auth.js';
 import { db } from '../../../db/client.js';
 import { obras, antennas } from '../../../db/schema.js';
+import { getObrasWithAntennas } from '../../../services/consumption.service.js';
+import { sendEmail, buildReportEmailHtml, buildReportSubject } from '../../../services/email.service.js';
+import { getCurrentCycle } from '../../../lib/cycle.js';
+import { config } from '../../../lib/config.js';
 
 const createSchema = z.object({
   key:    z.string().min(2).max(50).toUpperCase(),
@@ -87,6 +91,42 @@ const adminObrasRoutes: FastifyPluginAsync = async (fastify) => {
 
     if (!updated) return reply.code(404).send({ error: 'Obra no encontrada' });
     return reply.send(updated);
+  });
+
+  /** Envía reporte manual de todas las antenas de una obra */
+  fastify.post<{ Params: { id: string } }>('/:id/send-report', async (req, reply) => {
+    if (!config.SMTP_HOST) {
+      return reply.code(503).send({ error: 'SMTP no configurado' });
+    }
+
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return reply.code(400).send({ error: 'ID inválido' });
+
+    const [obraRow] = await db
+      .select({ key: obras.key, email: obras.email })
+      .from(obras)
+      .where(eq(obras.id, id))
+      .limit(1);
+
+    if (!obraRow)       return reply.code(404).send({ error: 'Obra no encontrada' });
+    if (!obraRow.email) return reply.code(400).send({ error: 'La obra no tiene email configurado' });
+
+    const allObras = await getObrasWithAntennas();
+    const obra = allObras.find((o) => o.key === obraRow.key);
+    if (!obra) return reply.code(404).send({ error: 'Obra sin datos de consumo aún' });
+
+    const cycle      = getCurrentCycle();
+    const cycleStart = cycle.start.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+    const cycleEnd   = cycle.end.toLocaleDateString('es-CL',   { day: 'numeric', month: 'long' });
+    const reportDate = new Date().toLocaleDateString('es-CL',  { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    await sendEmail({
+      to:      obraRow.email,
+      subject: buildReportSubject(obra.label, reportDate),
+      html:    buildReportEmailHtml({ obra, reportDate, cycleStart, cycleEnd }),
+    });
+
+    return reply.send({ ok: true, sentTo: obraRow.email, antennas: obra.antennas.length });
   });
 
 };

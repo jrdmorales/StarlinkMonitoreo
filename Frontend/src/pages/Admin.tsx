@@ -129,6 +129,20 @@ export default function Admin() {
     onError: (err) => showToast('err', err instanceof Error ? err.message : 'Error al sincronizar'),
   });
 
+  const [sendingReportId, setSendingReportId] = useState<number | null>(null);
+
+  async function sendObraReport(obraId: number, obraLabel: string) {
+    setSendingReportId(obraId);
+    try {
+      await api.post(`/admin/obras/${obraId}/send-report`, {});
+      showToast('ok', `Reporte de ${obraLabel} enviado`);
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al enviar reporte');
+    } finally {
+      setSendingReportId(null);
+    }
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function startEdit(id: number, currentVal: string) {
     setEditingId(id);
@@ -492,6 +506,7 @@ export default function Admin() {
                       <th>Nombre</th>
                       <th>Email alertas</th>
                       <th className="r">Antenas</th>
+                      <th className="r">Reporte</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -525,6 +540,17 @@ export default function Admin() {
                           )}
                         </td>
                         <td className="r mono">{o.antennaCount}</td>
+                        <td className="r">
+                          <button
+                            className="btn-ghost sm"
+                            disabled={sendingReportId === o.id || !o.email}
+                            title={o.email ? `Enviar reporte a ${o.email}` : 'Sin email configurado'}
+                            onClick={() => sendObraReport(o.id, o.label)}
+                            style={{ color: 'var(--accent)', opacity: (!o.email || sendingReportId === o.id) ? 0.4 : 1 }}
+                          >
+                            <Icons.chart size={14} />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
