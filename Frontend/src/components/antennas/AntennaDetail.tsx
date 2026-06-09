@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Icons } from '../ui/Icons';
 import StatusBadge from '../ui/StatusBadge';
 import DonutGauge from '../ui/DonutGauge';
 import AreaChart from '../charts/AreaChart';
 import { fmtGB, fmtGB1, fmtDateShort } from '../../lib/formatters';
+import { api, token } from '../../api/client';
 import type { AntennaDto, HistoryPoint } from '../../types/index';
 
 interface Props {
@@ -11,7 +13,38 @@ interface Props {
   loading?: boolean;
 }
 
+type SendState = 'idle' | 'sending' | 'ok' | 'error';
+
 export default function AntennaDetail({ antenna, history, loading }: Props) {
+  const [alertState,  setAlertState ] = useState<SendState>('idle');
+  const [reportState, setReportState] = useState<SendState>('idle');
+  const isAdmin = !!token.get();
+
+  async function sendAlert() {
+    if (!antenna) return;
+    setAlertState('sending');
+    try {
+      await api.post(`/admin/antennas/${antenna.code}/send-alert`, {});
+      setAlertState('ok');
+      setTimeout(() => setAlertState('idle'), 3000);
+    } catch {
+      setAlertState('error');
+      setTimeout(() => setAlertState('idle'), 3000);
+    }
+  }
+
+  async function sendReport() {
+    if (!antenna) return;
+    setReportState('sending');
+    try {
+      await api.post(`/admin/antennas/${antenna.code}/send-report`, {});
+      setReportState('ok');
+      setTimeout(() => setReportState('idle'), 3000);
+    } catch {
+      setReportState('error');
+      setTimeout(() => setReportState('idle'), 3000);
+    }
+  }
   if (!antenna) {
     return (
       <div className="panel detail empty-detail">
@@ -55,6 +88,39 @@ export default function AntennaDetail({ antenna, history, loading }: Props) {
       {antenna.projection.bagsNeeded > 0 && (
         <div style={{ padding: '8px 0 16px', fontSize: 12, color: 'var(--warn)', borderBottom: '1px solid var(--line)' }}>
           {antenna.projection.suggestion}
+        </div>
+      )}
+
+      {isAdmin && (
+        <div style={{ display: 'flex', gap: 8, padding: '12px 0', borderBottom: '1px solid var(--line)' }}>
+          <button
+            onClick={sendAlert}
+            disabled={alertState === 'sending'}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              padding: '7px 10px', borderRadius: 8, border: '1px solid var(--line)', cursor: 'pointer',
+              background: alertState === 'ok' ? 'var(--ok-bg, #f0fdf4)' : alertState === 'error' ? 'var(--risk-bg, #fef2f2)' : 'var(--panel)',
+              color: alertState === 'ok' ? 'var(--ok, #16a34a)' : alertState === 'error' ? 'var(--risk)' : 'var(--text)',
+              fontSize: 12, fontWeight: 600, opacity: alertState === 'sending' ? 0.6 : 1,
+            }}
+          >
+            <Icons.alert size={13} />
+            {alertState === 'sending' ? 'Enviando...' : alertState === 'ok' ? 'Alerta enviada ✓' : alertState === 'error' ? 'Error al enviar' : 'Enviar alerta'}
+          </button>
+          <button
+            onClick={sendReport}
+            disabled={reportState === 'sending'}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              padding: '7px 10px', borderRadius: 8, border: '1px solid var(--line)', cursor: 'pointer',
+              background: reportState === 'ok' ? 'var(--ok-bg, #f0fdf4)' : reportState === 'error' ? 'var(--risk-bg, #fef2f2)' : 'var(--panel)',
+              color: reportState === 'ok' ? 'var(--ok, #16a34a)' : reportState === 'error' ? 'var(--risk)' : 'var(--text)',
+              fontSize: 12, fontWeight: 600, opacity: reportState === 'sending' ? 0.6 : 1,
+            }}
+          >
+            <Icons.chart size={13} />
+            {reportState === 'sending' ? 'Enviando...' : reportState === 'ok' ? 'Reporte enviado ✓' : reportState === 'error' ? 'Error al enviar' : 'Enviar reporte'}
+          </button>
         </div>
       )}
 

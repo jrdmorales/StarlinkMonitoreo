@@ -10,6 +10,14 @@ import {
   updateAntennaLimit,
   deactivateAntenna,
 } from '../../../db/repositories/antenna.repo.js';
+import { getObrasWithAntennas } from '../../../services/consumption.service.js';
+import {
+  sendEmail,
+  buildAlertEmailHtml, buildAlertSubject,
+  buildReportEmailHtml, buildReportSubject,
+} from '../../../services/email.service.js';
+import { getCurrentCycle } from '../../../lib/cycle.js';
+import { alertThresholds, config } from '../../../lib/config.js';
 
 const createSchema = z.object({
   code:    z.string().min(5).max(20),
@@ -133,6 +141,81 @@ const adminAntennasRoutes: FastifyPluginAsync = async (fastify) => {
 
     await deactivateAntenna(id);
     return reply.send({ ok: true, id });
+  });
+
+  /** Envía alerta manual para una antena específica (force-send, sin registrar en alert_log) */
+  fastify.post<{ Params: { code: string } }>('/:code/send-alert', async (req, reply) => {
+    if (!config.SMTP_HOST) {
+      return reply.code(503).send({ error: 'SMTP no configurado' });
+    }
+
+    const { code } = req.params;
+    const allObras = await getObrasWithAntennas();
+
+    let targetAntenna = null;
+    let targetObra    = null;
+    for (const obra of allObras) {
+      const ant = obra.antennas.find((a) => a.code === code);
+      if (ant) { targetAntenna = ant; targetObra = obra; break; }
+    }
+
+    if (!targetAntenna || !targetObra) {
+      return reply.code(404).send({ error: 'Antena no encontrada o sin datos de consumo' });
+    }
+
+    const cycle         = getCurrentCycle();
+    const cycleStartFmt = cycle.start.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+    const cycleEndFmt   = cycle.end.toLocaleDateString('es-CL',   { day: 'numeric', month: 'long' });
+
+    // Usar el umbral más alto superado, o el menor configurado si no supera ninguno
+    const threshold = [...alertThresholds].reverse().find((t) => targetAntenna!.usagePct >= t)
+      ?? alertThresholds[0]
+      ?? 60;
+
+    await sendEmail({
+      to:      targetObra.email ?? config.ADMIN_EMAIL ?? '',
+      subject: buildAlertSubject(targetObra.label, threshold, 1),
+      html:    buildAlertEmailHtml({
+        obra:       targetObra,
+        threshold,
+        antennas:   [targetAntenna],
+        cycleStart: cycleStartFmt,
+        cycleEnd:   cycleEndFmt,
+      }),
+    });
+
+    return reply.send({ ok: true, sentTo: targetObra.email, threshold });
+  });
+
+  /** Envía reporte semanal manual para la obra de una antena específica */
+  fastify.post<{ Params: { code: string } }>('/:code/send-report', async (req, reply) => {
+    if (!config.SMTP_HOST) {
+      return reply.code(503).send({ error: 'SMTP no configurado' });
+    }
+
+    const { code } = req.params;
+    const allObras = await getObrasWithAntennas();
+    const targetObra = allObras.find((o) => o.antennas.some((a) => a.code === code));
+
+    if (!targetObra) {
+      return reply.code(404).send({ error: 'Antena no encontrada o sin datos de consumo' });
+    }
+    if (!targetObra.email) {
+      return reply.code(400).send({ error: 'La obra no tiene email configurado' });
+    }
+
+    const cycle      = getCurrentCycle();
+    const cycleStart = cycle.start.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+    const cycleEnd   = cycle.end.toLocaleDateString('es-CL',   { day: 'numeric', month: 'long' });
+    const reportDate = new Date().toLocaleDateString('es-CL',  { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    await sendEmail({
+      to:      targetObra.email,
+      subject: buildReportSubject(targetObra.label, reportDate),
+      html:    buildReportEmailHtml({ obra: targetObra, reportDate, cycleStart, cycleEnd }),
+    });
+
+    return reply.send({ ok: true, sentTo: targetObra.email });
   });
 
 };
