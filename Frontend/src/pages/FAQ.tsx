@@ -594,10 +594,10 @@ function ApCalc({ onClose }: { onClose: () => void }) {
   const apCount   = areaNum > 0 && apAreaEff > 0 ? Math.ceil(areaNum / apAreaEff) : null;
 
   const presets = [
-    { label: 'Interior estrecho',  range: '15',  eff: '65' },
-    { label: 'Interior abierto',   range: '25',  eff: '70' },
-    { label: 'Exterior / obra',    range: '40',  eff: '60' },
-    { label: 'Exterior amplio',    range: '60',  eff: '55' },
+    { label: 'Interior estrecho',  range: '15', eff: '65', desc: 'Pasillos, bodegas con racks, pisos con muchas paredes o tabiques. Señal se degrada rápido.' },
+    { label: 'Interior abierto',   range: '25', eff: '70', desc: 'Oficinas abiertas, comedores, salas de reunión sin divisiones. Paredes de yeso o vidrio.' },
+    { label: 'Exterior / obra',    range: '40', eff: '60', desc: 'Faenas al aire libre, campamentos, patios de maniobra. Maquinaria y estructuras bloquean parte de la señal.' },
+    { label: 'Exterior amplio',    range: '60', eff: '55', desc: 'Estacionamientos, canchas, terrenos planos sin obstáculos. Máxima distancia, mínima interferencia.' },
   ];
 
   return (
@@ -624,18 +624,26 @@ function ApCalc({ onClose }: { onClose: () => void }) {
         <div style={{ marginBottom: 18 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Presets</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
-            {presets.map((p) => (
-              <button key={p.label} onClick={() => { setApRange(p.range); setEfficiency(p.eff); }}
-                style={{
-                  background: apRange === p.range && efficiency === p.eff ? 'var(--accent)' : 'var(--bg-2)',
-                  color: apRange === p.range && efficiency === p.eff ? '#fff' : 'var(--text)',
-                  border: '1px solid var(--line)', borderRadius: 9, padding: '7px 10px',
-                  fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
-                }}>
-                {p.label}
-                <div style={{ fontSize: 10.5, opacity: 0.7, marginTop: 2, fontFamily: 'monospace' }}>r={p.range}m · {p.eff}% ef.</div>
-              </button>
-            ))}
+            {presets.map((p) => {
+              const active = apRange === p.range && efficiency === p.eff;
+              return (
+                <button key={p.label} onClick={() => { setApRange(p.range); setEfficiency(p.eff); }}
+                  style={{
+                    background: active ? 'oklch(0.65 0.19 252 / 0.15)' : 'var(--bg-2)',
+                    color: 'var(--text)',
+                    border: `1px solid ${active ? 'oklch(0.65 0.19 252 / 0.5)' : 'var(--line)'}`,
+                    borderRadius: 9, padding: '9px 11px',
+                    fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+                  }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <span style={{ color: active ? 'oklch(0.65 0.19 252)' : 'var(--text)' }}>{p.label}</span>
+                    {active && <span style={{ fontSize: 9, background: 'oklch(0.65 0.19 252)', color: '#fff', borderRadius: 99, padding: '1px 6px', fontWeight: 700, letterSpacing: '0.05em' }}>ACTIVO</span>}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: 'var(--muted)', fontFamily: 'monospace', marginBottom: 5 }}>r={p.range}m · {p.eff}% ef.</div>
+                  <div style={{ fontSize: 11, color: 'var(--dim)', fontWeight: 400, lineHeight: 1.4 }}>{p.desc}</div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
