@@ -42,9 +42,8 @@ export async function upsertAntenna(data: {
       target: antennas.code,
       set: {
         name:      data.name,
-        obraId:    data.obraId,
         updatedAt: new Date(),
-        // limitGb intencionalmente excluido: el admin puede haberlo modificado
+        // limitGb y obraId excluidos: el admin puede haberlos modificado
       },
     })
     .returning();

@@ -119,6 +119,16 @@ export default function Admin() {
     onError: (err) => showToast('err', err instanceof Error ? err.message : 'Error'),
   });
 
+  const syncNow = useMutation({
+    mutationFn: () => api.post<{ ok: boolean; ms: number }>('/admin/sync', {}),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['admin-antennas'] });
+      qc.invalidateQueries({ queryKey: ['obras'] });
+      showToast('ok', `Sync completado (${res.ms} ms)`);
+    },
+    onError: (err) => showToast('err', err instanceof Error ? err.message : 'Error al sincronizar'),
+  });
+
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function startEdit(id: number, currentVal: string) {
     setEditingId(id);
@@ -178,6 +188,18 @@ export default function Admin() {
             <div className="crumb">Administración</div>
             <h1>Panel de control</h1>
           </div>
+          <button
+            className="btn-ghost"
+            onClick={() => syncNow.mutate()}
+            disabled={syncNow.isPending}
+            title="Fuerza un fetch de New Relic ahora"
+            style={{ display: 'flex', alignItems: 'center', gap: 7, opacity: syncNow.isPending ? 0.6 : 1 }}
+          >
+            <span style={{ display: 'inline-flex', animation: syncNow.isPending ? 'spin 1s linear infinite' : 'none' }}>
+              <Icons.refresh size={15} />
+            </span>
+            {syncNow.isPending ? 'Sincronizando…' : 'Sync ahora'}
+          </button>
         </header>
 
         {/* Tabs */}

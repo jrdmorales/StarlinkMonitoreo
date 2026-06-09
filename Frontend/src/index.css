@@ -224,3 +224,5 @@ body {
   .kpi-row { grid-template-columns: 1fr; }
   .search { width: 160px; }
 }
+
+@keyframes spin { to { transform: rotate(360deg); } }

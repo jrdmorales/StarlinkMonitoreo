@@ -1,8 +1,8 @@
 import { getCurrentCycle, formatDateISO, daysUntil } from '../lib/cycle.js';
 import { project } from '../lib/projection.js';
-import { RISK_THRESHOLD, WARN_THRESHOLD, GROUP_MAPPING } from '../lib/constants.js';
+import { RISK_THRESHOLD, WARN_THRESHOLD } from '../lib/constants.js';
 import { fetchStarlinkReadings } from './newrelic.service.js';
-import { findOrCreateObra, findAllObras } from '../db/repositories/obra.repo.js';
+import { findAllObras } from '../db/repositories/obra.repo.js';
 import { findAntennaByCode, upsertAntenna } from '../db/repositories/antenna.repo.js';
 import {
   insertConsumptionLog,
@@ -10,13 +10,6 @@ import {
   getConsumptionInCycle,
 } from '../db/repositories/consumption.repo.js';
 import type { AntennaDto, ObraDto, HistoryPoint, GlobalKpis } from '../types/index.js';
-
-function codeToObraKey(code: string): string {
-  for (const [key, { codes }] of Object.entries(GROUP_MAPPING)) {
-    if (codes.includes(code)) return key;
-  }
-  return 'OTROS-CLIENTES';
-}
 
 function statusFor(pct: number): 'ok' | 'warn' | 'risk' {
   if (pct >= RISK_THRESHOLD) return 'risk';
@@ -44,21 +37,11 @@ export async function refreshConsumption(): Promise<{ saved: number; skipped: nu
   let skipped = 0;
 
   for (const reading of readings) {
-    const obraKey = codeToObraKey(reading.code);
-    const group   = GROUP_MAPPING[obraKey];
-
-    const obra = await findOrCreateObra({
-      key:    obraKey,
-      label:  group?.label  ?? obraKey,
-      prefix: group?.prefix ?? obraKey.slice(0, 3),
-      email:  group?.email  ?? '',
-    });
-
-    // Preservar limitGb si el admin lo modificó; usar el de NR solo en creación
+    // Preservar obraId y limitGb si el admin los modificó; usar los de NR solo en creación
     const existing = await findAntennaByCode(reading.code);
     const antenna  = await upsertAntenna({
       code:    reading.code,
-      obraId:  obra.id,
+      obraId:  existing?.obraId ?? undefined,
       name:    reading.serviceName,
       limitGb: existing?.limitGb ?? reading.limitGb,
     });
