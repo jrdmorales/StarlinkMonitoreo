@@ -238,11 +238,7 @@ export default function Admin() {
 
             {/* ── Formulario nueva antena ────────────────────────────────────── */}
             {showForm && (
-              <div style={{
-                background: 'var(--bg-2)', border: '1px solid var(--accent)',
-                borderRadius: 12, padding: '18px 20px', marginBottom: 20,
-                display: 'grid', gridTemplateColumns: '1fr 1fr 140px auto', gap: 12, alignItems: 'end',
-              }}>
+              <div className="admin-antenna-form">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--muted)' }}>Código antena *</label>
                   <input
@@ -445,11 +441,7 @@ export default function Admin() {
 
             {/* ── Formulario nueva obra ──────────────────────────────────────── */}
             {showObraForm && (
-              <div style={{
-                background: 'var(--bg-2)', border: '1px solid var(--accent)',
-                borderRadius: 12, padding: '18px 20px', marginBottom: 20,
-                display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 0.7fr 1.5fr auto', gap: 12, alignItems: 'end',
-              }}>
+              <div className="admin-obra-form">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--muted)' }}>Clave *</label>
                   <input

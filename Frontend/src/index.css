@@ -214,15 +214,100 @@ body {
 .donut-label { color: var(--muted); font-size: 12px; }
 .donut-sub { color: var(--dim); font-size: 11px; font-family: "IBM Plex Mono", monospace; margin-top: 2px; }
 
+/* ── Admin forms ─────────────────────────────────────────────────────────── */
+.admin-antenna-form {
+  background: var(--bg-2); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;
+  display: grid; grid-template-columns: 1fr 1fr 140px auto; gap: 12px; align-items: end;
+}
+.admin-obra-form {
+  background: var(--bg-2); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;
+  display: grid; grid-template-columns: 1.5fr 1.5fr 0.7fr 1.5fr auto; gap: 12px; align-items: end;
+}
+
+/* ── Tablet ──────────────────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .grid-2, .detail-layout { grid-template-columns: 1fr; }
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .detail { position: static; }
 }
-@media (max-width: 640px) {
-  .content { padding: 20px 16px 40px 22px; }
-  .kpi-row { grid-template-columns: 1fr; }
-  .search { width: 160px; }
+
+/* ── Mobile sidebar → bottom nav ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0; top: auto;
+    width: 100%; height: 62px; flex: none;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px;
+    gap: 0;
+    border-right: none;
+    border-top: 1px solid var(--line);
+    z-index: 200;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: oklch(0.17 0.02 255 / 0.95);
+  }
+  .logo { display: none; }
+  .nav {
+    flex-direction: row; margin-top: 0; gap: 0;
+    flex: 1; justify-content: space-around; align-items: center;
+  }
+  .nav-btn { width: 50px; height: 50px; border-radius: 12px; }
+  .nav-btn.active::before {
+    left: 50%; top: 0; bottom: auto; right: auto;
+    width: 22px; height: 3px;
+    margin-left: -11px; margin-top: -5px;
+    border-radius: 0 0 3px 3px;
+  }
+  .logout { margin-left: 0; }
+
+  .content { padding: 20px 16px 80px 16px; }
+
+  .topbar { flex-wrap: wrap; gap: 10px; }
+  .topbar h1 { font-size: 22px; }
+  .topbar > button, .topbar > div:last-child { flex-shrink: 0; }
+
+  .topbar-right { width: 100%; }
+  .search { width: 100%; }
+
+  .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  .panel { padding: 16px; }
+  .panel-head { flex-wrap: wrap; gap: 10px; }
+
+  .admin-antenna-form { grid-template-columns: 1fr 1fr; }
+  .admin-antenna-form > *:nth-child(3),
+  .admin-antenna-form > *:nth-child(4) { grid-column: span 2; }
+
+  .admin-obra-form { grid-template-columns: 1fr 1fr; }
+  .admin-obra-form > *:nth-child(3) { grid-column: span 1; }
+  .admin-obra-form > *:nth-child(4),
+  .admin-obra-form > *:nth-child(5) { grid-column: span 2; }
+
+  .atable th, .atable td { padding: 10px 8px; font-size: 12px; }
+  .cell-name { max-width: 140px; }
+}
+
+/* ── Small mobile ─────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .kpi-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kpi-value { font-size: 24px; }
+  .kpi { padding: 14px 14px; }
+
+  .topbar h1 { font-size: 20px; }
+
+  .admin-antenna-form,
+  .admin-obra-form { grid-template-columns: 1fr; }
+  .admin-antenna-form > *,
+  .admin-obra-form > * { grid-column: span 1 !important; }
+
+  .seg-btn { padding: 6px 11px; font-size: 12px; }
+
+  .detail-stats { grid-template-columns: 1fr 1fr; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
