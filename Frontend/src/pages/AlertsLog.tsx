@@ -4,11 +4,12 @@ import { Icons } from '../components/ui/Icons';
 import { useAlertLog, useAlertPreview } from '../hooks/useAlertLog';
 import type { AlertLogEntry } from '../types/index';
 
-const THRESHOLD_STYLE: Record<number, { color: string; bg: string; label: string }> = {
-  50:  { color: 'var(--warn)', bg: 'var(--warn-bg)', label: '50%' },
-  80:  { color: '#fb923c',     bg: 'oklch(0.66 0.20 40 / 0.14)', label: '80%' },
-  100: { color: 'var(--risk)', bg: 'var(--risk-bg)', label: '100%' },
-};
+function getThresholdStyle(threshold: number): { color: string; bg: string; label: string } {
+  const label = `${threshold}%`;
+  if (threshold >= 100) return { color: 'var(--risk)', bg: 'var(--risk-bg)', label };
+  if (threshold >= 75)  return { color: '#fb923c',     bg: 'oklch(0.66 0.20 40 / 0.14)', label };
+  return                       { color: 'var(--warn)', bg: 'var(--warn-bg)', label };
+}
 
 function fmtDateTime(iso: string): { date: string; time: string } {
   const d = new Date(iso);
@@ -29,6 +30,12 @@ export default function AlertsLog() {
     selected?.obraKey ?? null,
     selected?.threshold ?? null,
   );
+
+  // Umbrales únicos presentes en los datos (para filtros dinámicos)
+  const availableThresholds = useMemo(() => {
+    if (!data?.alerts) return [];
+    return [...new Set(data.alerts.map((a) => a.threshold))].sort((a, b) => a - b);
+  }, [data]);
 
   // Agrupar alertas por fecha de envío
   const grouped = useMemo(() => {
@@ -61,13 +68,13 @@ export default function AlertsLog() {
           </div>
           <div className="topbar-right">
             <div className="seg">
-              {([['all', 'Todas'], [50, '50%'], [80, '80%'], [100, '100%']] as const).map(([v, l]) => (
+              {([['all', 'Todas'] as const, ...availableThresholds.map((t) => [t, `${t}%`] as const)]).map(([v, l]) => (
                 <button
                   key={String(v)}
                   className={'seg-btn' + (filterThreshold === v ? ' on' : '')}
                   onClick={() => setFilterThreshold(v)}
                   style={filterThreshold !== v && v !== 'all'
-                    ? { color: THRESHOLD_STYLE[v as number]?.color }
+                    ? { color: getThresholdStyle(v as number).color }
                     : {}
                   }
                 >
@@ -116,7 +123,7 @@ export default function AlertsLog() {
                         {date}
                       </div>
                       {deduped.map((entry) => {
-                        const ts   = THRESHOLD_STYLE[entry.threshold] ?? THRESHOLD_STYLE[100];
+                        const ts   = getThresholdStyle(entry.threshold);
                         const time = fmtDateTime(entry.sentAt).time;
                         const isSelected =
                           selected?.obraKey === entry.obraKey &&
