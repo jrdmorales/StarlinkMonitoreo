@@ -35,3 +35,8 @@ Thumbs.db
 # Test files
 test-*.ts
 check-*.ts
+
+# Secrets / legacy scripts with credentials
+*.secret.*
+secrets/
+credentials/
