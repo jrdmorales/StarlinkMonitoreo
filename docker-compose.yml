@@ -15,5 +15,22 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://starlink:starlink_dev@postgres:5432/starlink
+      NODE_ENV: production
+      PORT: 3000
+    env_file:
+      - ./Backend/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   pgdata:
