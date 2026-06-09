@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: starlink
       POSTGRES_USER: starlink
-      POSTGRES_PASSWORD: starlink_dev
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-starlink_dev}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

@@ -19,7 +19,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
    * Crea el primer y único usuario admin.
    * Bloqueado si ya existe un usuario en la DB — no permite registros adicionales.
    */
-  fastify.post('/setup', async (req, reply) => {
+  fastify.post('/setup', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (req, reply) => {
     const total = await countUsers();
     if (total > 0) {
       return reply.code(409).send({ error: 'Admin ya configurado. Usa /login.' });
@@ -41,7 +41,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   /** Autenticación: retorna JWT válido por 8 horas */
-  fastify.post('/login', async (req, reply) => {
+  fastify.post('/login', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (req, reply) => {
     const body = loginSchema.safeParse(req.body);
     if (!body.success) {
       return reply.code(400).send({ error: 'Email o contraseña inválidos' });

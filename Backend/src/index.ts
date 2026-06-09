@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
+import rateLimit from '@fastify/rate-limit';
 import { config } from './lib/config.js';
 import { errorHandler } from './api/middleware/error-handler.js';
 import obrasRoutes from './api/routes/obras.js';
@@ -26,6 +27,13 @@ async function main(): Promise<void> {
 
   await app.register(cors, {
     origin: config.NODE_ENV === 'development',
+  });
+
+  await app.register(rateLimit, {
+    global:       false,   // solo aplicar donde se decora explícitamente
+    max:          20,
+    timeWindow:   '1 minute',
+    errorResponseBuilder: () => ({ error: 'Demasiados intentos. Espera un minuto.' }),
   });
 
   app.setErrorHandler(errorHandler);
@@ -55,10 +63,8 @@ async function main(): Promise<void> {
   }
 
   app.get('/health', async () => ({
-    status:      'ok',
-    timestamp:   new Date().toISOString(),
-    env:         config.NODE_ENV,
-    adminEnabled: !!config.JWT_SECRET,
+    status:    'ok',
+    timestamp: new Date().toISOString(),
   }));
 
   await app.listen({ port: config.PORT, host: '0.0.0.0' });

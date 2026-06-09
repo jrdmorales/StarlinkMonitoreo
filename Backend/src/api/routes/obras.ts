@@ -4,6 +4,11 @@ import { getLastFetchedAt } from '../../db/repositories/consumption.repo.js';
 
 const obrasRoutes: FastifyPluginAsync = async (fastify) => {
 
+  function stripEmail<T extends { email: string }>(obra: T): Omit<T, 'email'> {
+    const { email: _email, ...rest } = obra;
+    return rest;
+  }
+
   /** Lista todas las obras con KPIs agregados y antenas */
   fastify.get('/', async (_req, reply) => {
     const [obras, kpis, lastFetchedAt] = await Promise.all([
@@ -12,7 +17,7 @@ const obrasRoutes: FastifyPluginAsync = async (fastify) => {
       getLastFetchedAt(),
     ]);
     return reply.send({
-      obras,
+      obras:       obras.map(stripEmail),
       kpis,
       lastUpdated: lastFetchedAt?.toISOString() ?? null,
     });
@@ -27,7 +32,7 @@ const obrasRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(404).send({ error: `Obra '${req.params.key}' no encontrada` });
     }
 
-    return reply.send(obra);
+    return reply.send(stripEmail(obra));
   });
 
 };
