@@ -580,8 +580,132 @@ function Modal({ section, onClose, onPrev, onNext, hasPrev, hasNext }: {
 
 /* ═══════════════ PAGE ═══════════════ */
 
+/* ─── AP Coverage Calculator ─── */
+function ApCalc({ onClose }: { onClose: () => void }) {
+  const [area,       setArea      ] = useState('');
+  const [apRange,    setApRange   ] = useState('30');
+  const [efficiency, setEfficiency] = useState('70');
+
+  const areaNum = parseFloat(area);
+  const rangeNum = parseFloat(apRange);
+  const effNum   = parseFloat(efficiency) / 100;
+
+  const apAreaEff = rangeNum > 0 ? Math.PI * rangeNum * rangeNum * effNum : 0;
+  const apCount   = areaNum > 0 && apAreaEff > 0 ? Math.ceil(areaNum / apAreaEff) : null;
+
+  const presets = [
+    { label: 'Interior estrecho',  range: '15',  eff: '65' },
+    { label: 'Interior abierto',   range: '25',  eff: '70' },
+    { label: 'Exterior / obra',    range: '40',  eff: '60' },
+    { label: 'Exterior amplio',    range: '60',  eff: '55' },
+  ];
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 900,
+      background: 'oklch(0 0 0 / 0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }} onClick={onClose}>
+      <div style={{
+        background: 'var(--panel)', border: '1px solid var(--line)',
+        borderRadius: 18, padding: '28px 28px 24px', width: 420, maxWidth: '95vw',
+        boxShadow: '0 24px 60px oklch(0 0 0 / 0.5)',
+      }} onClick={(e) => e.stopPropagation()}>
+
+        {/* header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Calculadora de APs</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3 }}>Estimación de puntos de acceso por cobertura</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: 4, lineHeight: 1 }}>✕</button>
+        </div>
+
+        {/* presets */}
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Presets</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
+            {presets.map((p) => (
+              <button key={p.label} onClick={() => { setApRange(p.range); setEfficiency(p.eff); }}
+                style={{
+                  background: apRange === p.range && efficiency === p.eff ? 'var(--accent)' : 'var(--bg-2)',
+                  color: apRange === p.range && efficiency === p.eff ? '#fff' : 'var(--text)',
+                  border: '1px solid var(--line)', borderRadius: 9, padding: '7px 10px',
+                  fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+                }}>
+                {p.label}
+                <div style={{ fontSize: 10.5, opacity: 0.7, marginTop: 2, fontFamily: 'monospace' }}>r={p.range}m · {p.eff}% ef.</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* inputs */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+          {[
+            { label: 'Área total a cubrir', unit: 'm²', val: area,       set: setArea,       placeholder: 'ej: 1500' },
+            { label: 'Radio de cobertura AP', unit: 'm', val: apRange,   set: setApRange,    placeholder: 'ej: 30' },
+            { label: 'Eficiencia real',      unit: '%',  val: efficiency, set: setEfficiency, placeholder: 'ej: 70' },
+          ].map(({ label, unit, val, set, placeholder }) => (
+            <div key={label}>
+              <label style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>{label}</label>
+              <div style={{ display: 'flex', gap: 0 }}>
+                <input
+                  type="number" min="0" value={val} placeholder={placeholder}
+                  onChange={(e) => set(e.target.value)}
+                  style={{
+                    flex: 1, background: 'var(--bg-2)', border: '1px solid var(--line)',
+                    borderRight: 'none', borderRadius: '8px 0 0 8px',
+                    padding: '8px 12px', color: 'var(--text)', font: 'inherit', fontSize: 13, outline: 'none',
+                  }}
+                />
+                <span style={{
+                  background: 'var(--bg-2)', border: '1px solid var(--line)', borderLeft: 'none',
+                  borderRadius: '0 8px 8px 0', padding: '8px 12px',
+                  fontSize: 12, color: 'var(--muted)', fontFamily: 'monospace', display: 'flex', alignItems: 'center',
+                }}>{unit}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* result */}
+        <div style={{
+          background: apCount !== null ? 'oklch(0.65 0.19 252 / 0.12)' : 'var(--bg-2)',
+          border: `1px solid ${apCount !== null ? 'oklch(0.65 0.19 252 / 0.35)' : 'var(--line)'}`,
+          borderRadius: 12, padding: '16px 18px',
+        }}>
+          {apCount !== null ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ textAlign: 'center', minWidth: 64 }}>
+                <div style={{ fontFamily: 'monospace', fontSize: 40, fontWeight: 900, color: 'oklch(0.65 0.19 252)', lineHeight: 1 }}>{apCount}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>APs necesarios</div>
+              </div>
+              <div style={{ flex: 1, fontSize: 12, color: 'var(--muted)', borderLeft: '1px solid var(--line)', paddingLeft: 16 }}>
+                <div>Cobertura por AP: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{Math.round(apAreaEff)} m²</b></div>
+                <div style={{ marginTop: 5 }}>Cobertura total: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{Math.round(apCount * apAreaEff)} m²</b></div>
+                <div style={{ marginTop: 5, fontSize: 11, color: 'oklch(0.65 0.19 252)' }}>
+                  Fórmula: ⌈{areaNum} ÷ (π·{rangeNum}²·{effNum.toFixed(2)})⌉
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
+              Ingresa el área para calcular
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: 12, fontSize: 11, color: 'var(--dim)', textAlign: 'center' }}>
+          La eficiencia real varía según obstáculos, interferencia y altura de instalación.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FAQ() {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [showCalc,  setShowCalc ] = useState(false);
 
   const activeIdx = SECTIONS.findIndex((s) => s.id === activeId);
   const activeSection = activeIdx >= 0 ? SECTIONS[activeIdx] : null;
@@ -603,16 +727,29 @@ export default function FAQ() {
             <h1 style={{ margin: '4px 0 6px', fontSize: 26, letterSpacing: '-0.025em' }}>Procedimientos Starlink</h1>
             <p style={{ margin: 0, color: 'var(--muted)', fontSize: 13 }}>Todo lo que necesitas saber. Haz click en cualquier tarjeta para ver el detalle.</p>
           </div>
-          <a href={PDF_URL} download="Procedimiento_Starlink_ENTEL.pdf" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'var(--accent)', color: '#fff', textDecoration: 'none',
-            borderRadius: 12, padding: '11px 20px', fontFamily: 'inherit',
-            fontWeight: 700, fontSize: 13.5, flexShrink: 0, alignSelf: 'flex-start',
-            boxShadow: '0 4px 16px oklch(0.66 0.17 252 / 0.3)',
-          }}>
-            <Icons.download size={16} stroke="#fff" />
-            Descargar PDF
-          </a>
+          <div style={{ display: 'flex', gap: 10, flexShrink: 0, alignSelf: 'flex-start' }}>
+            <button onClick={() => setShowCalc(true)} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: 'var(--panel)', color: 'var(--text)', textDecoration: 'none',
+              border: '1px solid var(--line)',
+              borderRadius: 12, padding: '11px 20px', fontFamily: 'inherit',
+              fontWeight: 700, fontSize: 13.5, cursor: 'pointer',
+            }}>
+              <Icons.spark size={16} />
+              Calc. APs
+            </button>
+            <a href={PDF_URL} download="Procedimiento_Starlink_ENTEL.pdf" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: 'var(--accent)', color: '#fff', textDecoration: 'none',
+              borderRadius: 12, padding: '11px 20px', fontFamily: 'inherit',
+              fontWeight: 700, fontSize: 13.5,
+              boxShadow: '0 4px 16px oklch(0.66 0.17 252 / 0.3)',
+            }}>
+              <Icons.download size={16} stroke="#fff" />
+              Descargar PDF
+            </a>
+          </div>
+          {showCalc && <ApCalc onClose={() => setShowCalc(false)} />}
         </div>
 
         {/* Quick reference strip */}
