@@ -9,7 +9,7 @@ const SEED_DATA = [
   { key: 'LOPINTO-CLIENTES', prefix: 'LOP', label: 'Lo Pinto',     email: 'alertas@excon.cl', codes: ['10000698019', '10000698003', '10000698018'] },
   { key: 'QB-CLIENTES',      prefix: 'QB',  label: 'Quebrada B.',   email: 'alertas@excon.cl', codes: ['10000697942'] },
   { key: 'ZALD-CLIENTES',    prefix: 'ZAL', label: 'Zaldívar',     email: 'alertas@excon.cl', codes: ['10000697998', '10000697999', '10000697944'] },
-  { key: 'NEGR-CLIENTES',    prefix: 'NEG', label: 'El Negro',      email: 'alertas@excon.cl', codes: ['10000697973'] },
+  { key: 'NEGR-CLIENTES',    prefix: 'NEG', label: 'La Negra',      email: 'alertas@excon.cl', codes: ['10000697973'] },
   { key: 'ALB-CLIENTES',     prefix: 'ALB', label: 'Albemarle',     email: 'alertas@excon.cl', codes: ['10000698022'] },
 ];
 
