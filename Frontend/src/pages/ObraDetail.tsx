@@ -36,8 +36,6 @@ export default function ObraDetail() {
     );
   }
 
-  const accent = obra.status === 'risk' ? 'var(--risk)' : obra.status === 'warn' ? 'var(--warn)' : 'var(--accent)';
-
   return (
     <div className="app">
       <Sidebar />

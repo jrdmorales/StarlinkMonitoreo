@@ -331,7 +331,7 @@ export default function Admin() {
                                 >
                                   {sinAsignar
                                     ? <span style={{ fontWeight: 700 }}>⚠ Sin asignar <Icons.edit size={11} /></span>
-                                    : <span>{a.obraLabel} <Icons.edit size={11} style={{ opacity: 0.4 }} /></span>
+                                    : <span>{a.obraLabel} <span style={{ opacity: 0.4 }}><Icons.edit size={11} /></span></span>
                                   }
                                 </span>
                               )}

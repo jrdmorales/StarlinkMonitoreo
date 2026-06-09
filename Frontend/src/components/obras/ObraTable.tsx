@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Icons } from '../ui/Icons';
 import StatusBadge from '../ui/StatusBadge';
 import UsageBar from '../ui/UsageBar';
-import Sparkline from '../charts/Sparkline';
 import { STATUS_CONFIG } from '../../lib/constants';
 import { fmtGB, fmtPct } from '../../lib/formatters';
 import type { ObraDto } from '../../types/index';
@@ -31,13 +30,6 @@ export default function ObraTable({ obras }: Props) {
         <span className="th-in">{label}<Icons.sort size={13} stroke={sort.key === key ? 'var(--accent)' : 'var(--muted)'} /></span>
       </th>
     );
-  }
-
-  // Genera datos de tendencia para sparkline desde las antenas de la obra
-  function sparkData(obra: ObraDto) {
-    if (!obra.antennas.length) return [];
-    // Proxy: usamos usagePct de cada antena como mini sparkline de estado
-    return obra.antennas.map((a, i) => ({ date: String(i), daily: 0, cumulative: a.usagePct }));
   }
 
   return (

@@ -56,6 +56,7 @@ export interface ObrasResponse {
 }
 
 export interface HistoryPoint {
+  [key: string]: string | number;
   date:       string;
   daily:      number;
   cumulative: number;
