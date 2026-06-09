@@ -5,8 +5,6 @@ services:
       POSTGRES_DB: starlink
       POSTGRES_USER: starlink
       POSTGRES_PASSWORD: starlink_dev
-    ports:
-      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +18,7 @@ services:
       context: ./Backend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3000"
     environment:
       DATABASE_URL: postgresql://starlink:starlink_dev@postgres:5432/starlink
       NODE_ENV: production
