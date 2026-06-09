@@ -21,6 +21,14 @@ services:
       DATABASE_URL: postgresql://starlink:starlink_dev@postgres:5432/starlink
       NODE_ENV: production
       PORT: 3000
+      NEWRELIC_API_KEY: ${NEWRELIC_API_KEY}
+      NEWRELIC_ACCOUNT_ID: ${NEWRELIC_ACCOUNT_ID:-7041272}
+      JWT_SECRET: ${JWT_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-172.30.10.130}
+      SMTP_PORT: ${SMTP_PORT:-25}
+      SMTP_FROM: ${SMTP_FROM:-n8n@excon.cl}
+      FETCH_CRON: ${FETCH_CRON:-0 */4 * * *}
+      ALERT_THRESHOLDS: ${ALERT_THRESHOLDS:-60,80,100}
     depends_on:
       postgres:
         condition: service_healthy
@@ -31,7 +39,7 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     ports:
-      - "172.30.10.172::80"
+      - "172.30.10.172:32769:80"
     depends_on:
       - backend
     restart: unless-stopped
