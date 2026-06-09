@@ -24,7 +24,7 @@ services:
       NODE_ENV: production
       PORT: 3000
     env_file:
-      - ./Backend/.env
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
