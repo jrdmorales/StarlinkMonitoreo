@@ -8,7 +8,7 @@ import { sendWeeklyReport } from '../services/report.service.js';
  * Ejecuta un ciclo completo: fetch de New Relic → evaluar alertas.
  * Las alertas siempre corren después del fetch para trabajar con datos frescos.
  */
-async function runCycle(): Promise<void> {
+export async function runCycle(): Promise<void> {
   const start = Date.now();
   console.info('[Scheduler] Iniciando ciclo...');
 

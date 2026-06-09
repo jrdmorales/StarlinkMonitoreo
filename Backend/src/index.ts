@@ -10,6 +10,8 @@ import authRoutes from './api/routes/auth.js';
 import alertsRoutes from './api/routes/alerts.js';
 import adminAntennasRoutes from './api/routes/admin/antennas.js';
 import adminObrasRoutes from './api/routes/admin/obras.js';
+import adminSyncRoutes from './api/routes/admin/sync.js';
+import adminSeedRoutes from './api/routes/admin/seed.js';
 import { startScheduler } from './jobs/scheduler.js';
 
 async function main(): Promise<void> {
@@ -44,6 +46,8 @@ async function main(): Promise<void> {
     await app.register(authRoutes,           { prefix: '/api/auth' });
     await app.register(adminAntennasRoutes,  { prefix: '/api/admin/antennas' });
     await app.register(adminObrasRoutes,     { prefix: '/api/admin/obras' });
+    await app.register(adminSyncRoutes,      { prefix: '/api/admin/sync' });
+    await app.register(adminSeedRoutes,      { prefix: '/api/admin/seed' });
 
     app.log.info('Panel admin habilitado en /api/admin/*');
   } else {
