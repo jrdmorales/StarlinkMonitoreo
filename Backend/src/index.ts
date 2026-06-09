@@ -48,7 +48,7 @@ async function main(): Promise<void> {
   if (config.JWT_SECRET) {
     await app.register(fastifyJwt, {
       secret:  config.JWT_SECRET,
-      sign:    { expiresIn: '8h' },
+      sign:    { expiresIn: '60d' },
     });
 
     await app.register(authRoutes,           { prefix: '/api/auth' });

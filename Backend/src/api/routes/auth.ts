@@ -60,12 +60,12 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const token = fastify.jwt.sign(
       { sub: user.id, email: user.email },
-      { expiresIn: '8h' },
+      { expiresIn: '60d' },
     );
 
     return reply.send({
       token,
-      expiresIn: '8h',
+      expiresIn: '60d',
       email:     user.email,
     });
   });
