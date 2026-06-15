@@ -18,7 +18,7 @@
     "SALAR-CLIENTES":   { prefix: "SAL", label: "Salar",       codes: ["10000697951", "10000697963", "10000698005", "10000698006", "10000698012", "10000698009"] },
     "LOPINTO-CLIENTES": { prefix: "LOP", label: "Lo Pinto",    codes: ["10000698019", "10000698003", "10000698018"] },
     "QB-CLIENTES":      { prefix: "QB",  label: "Quebrada B.", codes: ["10000697942"] },
-    "ZALD-CLIENTES":    { prefix: "ZAL", label: "Zaldívar",    codes: ["10000697998", "10000697999", "10000697944"] },
+    "ZALD-CLIENTES":    { prefix: "ZAL", label: "Zaldívar Muro",    codes: ["10000697998", "10000697999", "10000697944"] },
     "NEGR-CLIENTES":    { prefix: "NEG", label: "La Negra",    codes: ["10000697973"] },
     "ALB-CLIENTES":     { prefix: "ALB", label: "Albemarle",   codes: ["10000698022"] },
   };
