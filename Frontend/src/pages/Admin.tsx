@@ -28,7 +28,8 @@ export default function Admin() {
   const [editVal, setEditVal]     = useState('');
   const [showForm,      setShowForm     ] = useState(false);
   const [showObraForm,  setShowObraForm ] = useState(false);
-  const [editingObraId, setEditingObraId] = useState<number | null>(null);
+  const [editingObraId,    setEditingObraId   ] = useState<number | null>(null);
+  const [editingObraField, setEditingObraField] = useState<'label' | 'email' | null>(null);
   const [antFilter,     setAntFilter    ] = useState<'all' | 'unassigned'>('all');
 
   // new-antenna form state
@@ -113,8 +114,10 @@ export default function Admin() {
       api.patch(`/admin/obras/${id}`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-obras'] });
+      qc.invalidateQueries({ queryKey: ['obras'] });
       showToast('ok', 'Guardado');
       setEditingId(null);
+      setEditingObraField(null);
     },
     onError: (err) => showToast('err', err instanceof Error ? err.message : 'Error'),
   });
@@ -147,6 +150,12 @@ export default function Admin() {
   function startEdit(id: number, currentVal: string) {
     setEditingId(id);
     setEditVal(currentVal);
+  }
+
+  function startObraEdit(id: number, field: 'label' | 'email', val: string) {
+    setEditingId(id * -1);
+    setEditingObraField(field);
+    setEditVal(val);
   }
 
   function saveAntenna(id: number, field: 'limitGb' | 'name') {
@@ -505,9 +514,33 @@ export default function Admin() {
                     {obraData?.obras.map((o) => (
                       <tr key={o.id}>
                         <td><span className="mono cell-code">{o.key}</span></td>
-                        <td>{o.label}</td>
                         <td>
-                          {editingId === o.id * -1 ? (
+                          {editingId === o.id * -1 && editingObraField === 'label' ? (
+                            <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                              <input
+                                value={editVal} onChange={(e) => setEditVal(e.target.value)}
+                                style={{ flex: 1, background: 'var(--bg-2)', border: '1px solid var(--accent)', borderRadius: 6, padding: '4px 8px', color: 'var(--text)', font: 'inherit', fontSize: 13 }}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter')  patchObra.mutate({ id: o.id, body: { label: editVal } });
+                                  if (e.key === 'Escape') { setEditingId(null); setEditingObraField(null); }
+                                }}
+                              />
+                              <button className="btn-ghost sm" onClick={() => patchObra.mutate({ id: o.id, body: { label: editVal } })}>✓</button>
+                              <button className="btn-ghost sm" onClick={() => { setEditingId(null); setEditingObraField(null); }}>✕</button>
+                            </span>
+                          ) : (
+                            <span
+                              style={{ cursor: 'pointer', fontSize: 13 }}
+                              onClick={() => startObraEdit(o.id, 'label', o.label)}
+                              title="Click para editar nombre"
+                            >
+                              {o.label} <span style={{ opacity: 0.4 }}><Icons.edit size={11} /></span>
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {editingId === o.id * -1 && editingObraField === 'email' ? (
                             <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                               <input
                                 type="email" value={editVal} onChange={(e) => setEditVal(e.target.value)}
@@ -515,16 +548,16 @@ export default function Admin() {
                                 autoFocus
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter')  patchObra.mutate({ id: o.id, body: { email: editVal } });
-                                  if (e.key === 'Escape') setEditingId(null);
+                                  if (e.key === 'Escape') { setEditingId(null); setEditingObraField(null); }
                                 }}
                               />
                               <button className="btn-ghost sm" onClick={() => patchObra.mutate({ id: o.id, body: { email: editVal } })}>✓</button>
-                              <button className="btn-ghost sm" onClick={() => setEditingId(null)}>✕</button>
+                              <button className="btn-ghost sm" onClick={() => { setEditingId(null); setEditingObraField(null); }}>✕</button>
                             </span>
                           ) : (
                             <span
                               style={{ cursor: 'pointer', color: 'var(--accent)', fontSize: 13 }}
-                              onClick={() => startEdit(o.id * -1, o.email)}
+                              onClick={() => startObraEdit(o.id, 'email', o.email)}
                               title="Click para editar"
                             >
                               {o.email || '—'} <Icons.edit size={12} />
