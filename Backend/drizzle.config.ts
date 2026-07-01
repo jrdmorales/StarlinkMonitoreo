@@ -2,7 +2,7 @@ import 'dotenv/config';
 import type { Config } from 'drizzle-kit';
 
 export default {
-  schema:    './src/db/schema.ts',
+  schema:    ['./src/db/schema.ts', './src/db/starlink-schema.ts'],
   out:       './src/db/migrations',
   dialect:   'postgresql',
   dbCredentials: {

@@ -19,6 +19,11 @@ const schema = z.object({
   JWT_SECRET:          z.string().min(32).optional(),
   ADMIN_EMAIL:         z.string().email().optional(),
   ADMIN_PASSWORD_HASH: z.string().optional(),
+  // Starlink API directa
+  STARLINK_ENCRYPTION_KEY: z.string().length(64, 'debe ser 64 chars hex (32 bytes) — generá con: openssl rand -hex 32').optional(),
+  STARLINK_SYNC_CRON:      z.string().default('0 */6 * * *'),
+  // Cuentas Starlink — JSON array, seed automático al arrancar
+  STARLINK_ACCOUNTS:       z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

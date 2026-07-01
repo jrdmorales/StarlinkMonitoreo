@@ -17,7 +17,7 @@ export const obras = pgTable('obras', {
 /** Antenas Starlink individuales */
 export const antennas = pgTable('antennas', {
   id:        serial('id').primaryKey(),
-  code:      varchar('code', { length: 20 }).unique().notNull(),   // "10000697951"
+  code:      varchar('code', { length: 50 }).unique().notNull(),   // "10000697951" | "SL-XXXXXXXX-XXXXX-XX"
   obraId:    integer('obra_id').references(() => obras.id, { onDelete: 'set null' }),
   name:      varchar('name', { length: 255 }),                     // nombre completo de New Relic
   limitGb:   integer('limit_gb').notNull().default(2000),
@@ -62,11 +62,12 @@ export const alertLog = pgTable('alert_log', {
   ),
 }));
 
-/** Usuario administrador (single user por diseño) */
+/** Usuarios del panel admin — roles: 'admin' (acceso total) | 'viewer' (solo lectura) */
 export const users = pgTable('users', {
   id:           serial('id').primaryKey(),
   email:        varchar('email', { length: 255 }).unique().notNull(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  role:         varchar('role', { length: 20 }).notNull().default('admin'), // default 'admin' para usuarios existentes en migración
   createdAt:    timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

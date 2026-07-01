@@ -16,8 +16,8 @@ const setupSchema = z.object({
 const authRoutes: FastifyPluginAsync = async (fastify) => {
 
   /**
-   * Crea el primer y único usuario admin.
-   * Bloqueado si ya existe un usuario en la DB — no permite registros adicionales.
+   * Crea el primer usuario admin (bootstrap).
+   * Bloqueado si ya existe al menos un usuario — los siguientes los crea un admin desde /api/admin/users.
    */
   fastify.post('/setup', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (req, reply) => {
     const total = await countUsers();
@@ -31,11 +31,12 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     const hash = await bcrypt.hash(body.data.password, 12);
-    const user = await createUser(body.data.email, hash);
+    const user = await createUser(body.data.email, hash, 'admin');
 
     return reply.code(201).send({
       ok:    true,
       email: user.email,
+      role:  user.role,
       hint:  'Ahora usa POST /api/auth/login para obtener tu token.',
     });
   });
@@ -59,7 +60,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     const token = fastify.jwt.sign(
-      { sub: user.id, email: user.email },
+      { sub: user.id, email: user.email, role: user.role },
       { expiresIn: '60d' },
     );
 
@@ -67,6 +68,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       token,
       expiresIn: '60d',
       email:     user.email,
+      role:      user.role,
     });
   });
 

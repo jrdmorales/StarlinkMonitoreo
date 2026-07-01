@@ -13,7 +13,10 @@ import adminAntennasRoutes from './api/routes/admin/antennas.js';
 import adminObrasRoutes from './api/routes/admin/obras.js';
 import adminSyncRoutes from './api/routes/admin/sync.js';
 import adminSeedRoutes from './api/routes/admin/seed.js';
+import adminStarlinkRoutes from './api/routes/admin/starlink.js';
+import adminUsersRoutes from './api/routes/admin/users.js';
 import { startScheduler } from './jobs/scheduler.js';
+import { seedAccountFromEnv } from './services/starlink/accounts.js';
 
 async function main(): Promise<void> {
   const app = Fastify({
@@ -56,6 +59,8 @@ async function main(): Promise<void> {
     await app.register(adminObrasRoutes,     { prefix: '/api/admin/obras' });
     await app.register(adminSyncRoutes,      { prefix: '/api/admin/sync' });
     await app.register(adminSeedRoutes,      { prefix: '/api/admin/seed' });
+    await app.register(adminStarlinkRoutes,  { prefix: '/api/admin/starlink' });
+    await app.register(adminUsersRoutes,     { prefix: '/api/admin/users' });
 
     app.log.info('Panel admin habilitado en /api/admin/*');
   } else {
@@ -69,6 +74,7 @@ async function main(): Promise<void> {
 
   await app.listen({ port: config.PORT, host: '0.0.0.0' });
 
+  await seedAccountFromEnv();
   startScheduler();
 }
 

@@ -112,7 +112,7 @@ npm run dev            # http://localhost:5173
 
 El ciclo de consumo corre del **día 14 al 13** de cada mes (según configuración ENTEL). El backend:
 
-1. Consulta New Relic cada 4 horas
+1. Consulta New Relic cada 1 horas
 2. Persiste snapshots en `consumption_logs`
 3. Evalúa umbrales → envía alertas si corresponde
 4. Cada viernes 08:00 envía reporte semanal por obra

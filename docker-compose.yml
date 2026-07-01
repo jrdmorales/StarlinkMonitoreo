@@ -26,7 +26,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-}
       SMTP_HOST: ${SMTP_HOST:-172.30.10.130}
       SMTP_PORT: ${SMTP_PORT:-25}
-      SMTP_FROM: ${SMTP_FROM:-n8n@excon.cl}
+      SMTP_FROM: ${SMTP_FROM:-informatica@excon.cl}
       FETCH_CRON: ${FETCH_CRON:-0 */4 * * *}
       ALERT_THRESHOLDS: ${ALERT_THRESHOLDS:-60,80,100}
     depends_on:

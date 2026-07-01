@@ -3,21 +3,25 @@ import { config } from '../lib/config.js';
 import { refreshConsumption } from '../services/consumption.service.js';
 import { checkAndSendAlerts } from '../services/alert.service.js';
 import { sendWeeklyReport } from '../services/report.service.js';
+import { runStarlinkSyncForAllAccounts } from './starlinkSync.js';
 
 /**
  * Ejecuta un ciclo completo: fetch de New Relic → evaluar alertas.
  * Las alertas siempre corren después del fetch para trabajar con datos frescos.
  */
-export async function runCycle(): Promise<void> {
+export async function runCycle(): Promise<{ saved: number; skipped: number; error?: string }> {
   const start = Date.now();
   console.info('[Scheduler] Iniciando ciclo...');
 
+  let result = { saved: 0, skipped: 0, error: undefined as string | undefined };
+
   try {
     const fetchResult = await refreshConsumption();
+    result = { ...result, saved: fetchResult.saved, skipped: fetchResult.skipped };
     console.info(`[Scheduler] Fetch completado: ${fetchResult.saved} guardados, ${fetchResult.skipped} omitidos`);
   } catch (err) {
+    result.error = err instanceof Error ? err.message : 'Error desconocido';
     console.error('[Scheduler] Error en fetch de New Relic:', err);
-    // No detener el check de alertas — puede haber datos de fetch anteriores
   }
 
   try {
@@ -30,6 +34,7 @@ export async function runCycle(): Promise<void> {
   }
 
   console.info(`[Scheduler] Ciclo completado en ${Date.now() - start}ms`);
+  return result;
 }
 
 /**
@@ -57,5 +62,19 @@ export function startScheduler(): void {
       }
     }, { timezone: 'America/Santiago' });
     console.info(`[Scheduler] Reporte semanal activo. Cron: "${config.REPORT_CRON}" (America/Santiago)`);
+  }
+
+  // Starlink API directa — solo si la clave de cifrado está configurada
+  if (process.env.STARLINK_ENCRYPTION_KEY && cron.validate(config.STARLINK_SYNC_CRON)) {
+    cron.schedule(config.STARLINK_SYNC_CRON, async () => {
+      console.info('[Scheduler] Iniciando sync Starlink...');
+      try {
+        const result = await runStarlinkSyncForAllAccounts();
+        console.info(`[Scheduler] Starlink sync: ${result.synced} ok, ${result.failed} fallidos`);
+      } catch (err) {
+        console.error('[Scheduler] Error en Starlink sync:', err);
+      }
+    }, { timezone: 'America/Santiago' });
+    console.info(`[Scheduler] Starlink sync activo. Cron: "${config.STARLINK_SYNC_CRON}" (America/Santiago)`);
   }
 }
