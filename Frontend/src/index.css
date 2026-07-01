@@ -205,6 +205,9 @@ body {
 .dist-value { width: 54px; flex: none; text-align: right; font-size: 12.5px; font-weight: 700; }
 .dist-value-gb { width: 90px; flex: none; text-align: right; font-size: 12.5px; font-weight: 700; }
 
+.dist-list-scroll { max-height: 230px; overflow-y: auto; padding-right: 4px; }
+.dist-list-scroll .dist-label { width: 78px; }
+
 .chart-wrap { position: relative; }
 .area-svg { width: 100%; display: block; }
 .chart-xaxis { position: relative; height: 16px; margin-top: 2px; }
