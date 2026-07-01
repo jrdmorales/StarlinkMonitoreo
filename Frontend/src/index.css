@@ -361,17 +361,11 @@ body {
 .settings-field { margin-bottom: 14px; }
 .settings-field-label { font-size: 11.5px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
 
-/* ── Report cards ────────────────────────────────────────────────────────── */
-.report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-.report-card-icon {
-  width: 38px; height: 38px; border-radius: 10px; background: var(--accent-soft);
-  display: grid; place-items: center; margin-bottom: 14px; color: var(--accent-strong);
-}
-.report-card-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
-.report-card-sub { font-size: 12.5px; color: var(--dim); margin: 6px 0 16px; }
 .report-status { font-size: 12.5px; font-weight: 600; margin-top: 10px; }
 .report-status.ok { color: var(--accent-strong); }
 .report-status.error { color: var(--risk); }
+
+.faq-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
 
 /* ── Laptop 11"-13" (~1194-1400px): mantiene tabla + panel lateral uno al lado
    del otro, pero achica la tabla (menos padding, sin sparkline) para que la
@@ -382,6 +376,7 @@ body {
   .usage-cell { width: 90px; min-width: 76px; }
   .cell-name { max-width: 130px; }
   .hist-col { display: none; }
+  .faq-cards-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
 }
 
 /* ── Tablet ──────────────────────────────────────────────────────────────── */
@@ -433,7 +428,6 @@ body {
   .page-header h1, .obra-title { font-size: 22px; }
 
   .kpi-row, .stat-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .report-grid { grid-template-columns: 1fr; gap: 10px; }
 
   .panel { padding: 16px; }
   .panel-head { flex-wrap: wrap; gap: 10px; }

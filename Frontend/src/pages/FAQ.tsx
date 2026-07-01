@@ -4,85 +4,22 @@ import { Icons } from '../components/ui/Icons';
 
 const PDF_URL = '/Procedimiento_Compra_Contratacion_Starlink_ENTEL%206.pdf';
 
-/* ─── Palette ─── */
-const C = {
-  blue:   'oklch(0.65 0.19 252)',
-  cyan:   'oklch(0.76 0.14 205)',
-  violet: 'oklch(0.68 0.19 290)',
-  amber:  'oklch(0.79 0.16 80)',
-  green:  'oklch(0.72 0.16 166)',
-  rose:   'oklch(0.71 0.18 350)',
-  teal:   'oklch(0.72 0.15 220)',
-};
-const alpha = (c: string, a: number) => c.replace('oklch(', `oklch(`).replace(')', ` / ${a})`);
+/* ─── Color: un solo acento, como en el resto del dashboard ─── */
+const ACCENT = 'var(--accent)';
+/** Deriva un tono translúcido del color recibido — funciona tanto con var(--x) como con hex/oklch. */
+const alpha = (c: string, a: number) => `color-mix(in srgb, ${c} ${Math.round(a * 100)}%, transparent)`;
 
-/* ─── SVG Illustrations ─── */
-function IlluBox({ c }: { c: string }) {
-  return <svg width="60" height="60" viewBox="0 0 52 52" fill="none">
-    <path d="M8 20l18-12 18 12v24l-18 8-18-8V20z" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.12" strokeLinejoin="round"/>
-    <path d="M8 20l18 8 18-8" stroke={c} strokeWidth="2"/>
-    <line x1="26" y1="28" x2="26" y2="52" stroke={c} strokeWidth="2"/>
-    <path d="M17 15l9 6 9-6" stroke={c} strokeWidth="1.5" strokeOpacity="0.5"/>
-  </svg>;
-}
-function IlluWifi({ c }: { c: string }) {
-  return <svg width="60" height="60" viewBox="0 0 52 52" fill="none">
-    <path d="M8 20c5-5 11-8 18-8s13 3 18 8" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
-    <path d="M14 27c3-3 7-5 12-5s9 2 12 5" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
-    <path d="M20 34c2-2 4-3 6-3s4 1 6 3" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
-    <circle cx="26" cy="41" r="3.5" fill={c}/>
-    <circle cx="26" cy="41" r="7" stroke={c} strokeWidth="1" strokeOpacity="0.25"/>
-  </svg>;
-}
-function IlluDoc({ c }: { c: string }) {
-  return <svg width="60" height="60" viewBox="0 0 52 52" fill="none">
-    <rect x="10" y="6" width="28" height="36" rx="4" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.1"/>
-    <line x1="16" y1="18" x2="36" y2="18" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <line x1="16" y1="24" x2="36" y2="24" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <line x1="16" y1="30" x2="28" y2="30" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="38" cy="40" r="9" fill={c} fillOpacity="0.15" stroke={c} strokeWidth="2"/>
-    <path d="M34 40l3 3 6-6" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>;
-}
-function IlluDB({ c }: { c: string }) {
-  return <svg width="60" height="60" viewBox="0 0 52 52" fill="none">
-    <ellipse cx="26" cy="14" rx="16" ry="7" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.15"/>
-    <path d="M10 14v10c0 3.87 7.16 7 16 7s16-3.13 16-7V14" stroke={c} strokeWidth="2"/>
-    <path d="M10 24v10c0 3.87 7.16 7 16 7s16-3.13 16-7V24" stroke={c} strokeWidth="2"/>
-    <line x1="38" y1="36" x2="44" y2="42" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
-    <circle cx="38" cy="34" r="5" stroke={c} strokeWidth="2"/>
-  </svg>;
-}
-function IlluBell({ c }: { c: string }) {
-  return <svg width="60" height="60" viewBox="0 0 52 52" fill="none">
-    <path d="M26 8v4" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
-    <path d="M14 26c0-6.63 5.37-12 12-12s12 5.37 12 12v8l4 4H10l4-4v-8z" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.12"/>
-    <path d="M22 42c0 2.21 1.79 4 4 4s4-1.79 4-4" stroke={c} strokeWidth="2"/>
-    <circle cx="38" cy="14" r="6" fill="oklch(0.66 0.20 22)" stroke="var(--bg)" strokeWidth="2"/>
-    <path d="M35 14h6M38 11v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>;
-}
-function IlluTeam({ c }: { c: string }) {
-  return <svg width="60" height="60" viewBox="0 0 52 52" fill="none">
-    <circle cx="26" cy="14" r="8" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.12"/>
-    <path d="M12 44c0-7.73 6.27-14 14-14s14 6.27 14 14" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="10" cy="20" r="5" stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.08" opacity="0.7"/>
-    <path d="M2 40c0-4.42 3.58-8 8-8" stroke={c} strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-    <circle cx="42" cy="20" r="5" stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.08" opacity="0.7"/>
-    <path d="M50 40c0-4.42-3.58-8-8-8" stroke={c} strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-  </svg>;
-}
-function IlluFlow({ c }: { c: string }) {
-  return <svg width="60" height="60" viewBox="0 0 52 52" fill="none">
-    <rect x="2" y="8" width="15" height="11" rx="3" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.1"/>
-    <rect x="2" y="33" width="15" height="11" rx="3" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.1"/>
-    <rect x="35" y="20" width="15" height="11" rx="3" stroke={c} strokeWidth="2" fill={c} fillOpacity="0.1"/>
-    <path d="M17 13.5h9" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <path d="M26 13.5v15" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <path d="M17 38.5h9" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <path d="M26 38.5v-9" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-    <path d="M26 25.5h9" stroke={c} strokeWidth="2" strokeLinecap="round"/>
-  </svg>;
+/** Icono de sección envuelto en una insignia circular, igual al patrón de .report-card-icon / .kpi-ic. */
+function IconBadge({ icon: I, size = 44 }: { icon: (p: { size?: number; stroke?: string }) => React.ReactNode; size?: number }) {
+  return (
+    <span style={{
+      width: size, height: size, flexShrink: 0, borderRadius: size >= 40 ? 12 : 9,
+      background: 'var(--accent-soft)', color: 'var(--accent-strong)',
+      display: 'grid', placeItems: 'center',
+    }}>
+      <I size={Math.round(size * 0.42)} />
+    </span>
+  );
 }
 
 /* ─── Content atoms ─── */
@@ -208,7 +145,7 @@ function SectionContent({ id, color }: { id: string; color: string }) {
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10 }}>Código para pedir en ReqLogic</div>
           <CodeCard code="ESTAR00000" label="Código del Kit Starlink" color={color} />
         </div>
-        <Callout icon={<Icons.alert size={16} stroke={C.amber} />} color={C.amber}
+        <Callout icon={<Icons.alert size={16} stroke="var(--warn)" />} color="var(--warn)"
           text="Apenas compres, avisa a TI por ticket adjuntando OC, FCN y número de PM. Los equipos llegan a Bodega Central — no a la obra directamente." />
       </div>
     );
@@ -230,7 +167,7 @@ function SectionContent({ id, color }: { id: string; color: string }) {
           <KitItem icon="🏢" name="1 AP por oficina" desc="Recomendación estándar" color={color} />
           <KitItem icon="🏗️" name="2 AP si hay obstáculos" desc="Muros, tabiques, vidrios" color={color} />
         </div>
-        <Callout icon={<Icons.alert size={16} stroke={C.amber} />} color={C.amber}
+        <Callout icon={<Icons.alert size={16} stroke="var(--warn)" />} color="var(--warn)"
           text="La señal se reduce con vidrios, muros de hormigón y tabiquería. Si la cobertura no llega, añade un AP extra." />
       </div>
     );
@@ -285,8 +222,8 @@ function SectionContent({ id, color }: { id: string; color: string }) {
           TI monitorea el consumo de cada antena y te avisa automáticamente por correo en estos 3 momentos:
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <TrafficLight pct="60%"  color={C.green}        label="Alerta temprana"  action="Planifica posible recarga" />
-          <TrafficLight pct="80%"  color={C.amber}        label="Advertencia"      action="Solicita bolsa adicional" />
+          <TrafficLight pct="60%"  color="var(--accent)"  label="Alerta temprana"  action="Planifica posible recarga" />
+          <TrafficLight pct="80%"  color="var(--warn)"    label="Advertencia"      action="Solicita bolsa adicional" />
           <TrafficLight pct="100%" color="var(--risk)"    label="¡Consumo total!"  action="Activación urgente" />
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -345,48 +282,40 @@ function SectionContent({ id, color }: { id: string; color: string }) {
 /* ─── Section metadata ─── */
 
 const SECTIONS = [
-  { id: 's1', num: '01', color: C.blue,   Illus: IlluBox,  title: 'Compra del Kit Starlink',     summary: 'Cómo pedir el equipo en ReqLogic' },
-  { id: 's2', num: '02', color: C.cyan,   Illus: IlluWifi, title: 'AP WiFi (FortiAP)',            summary: 'El router WiFi de la obra' },
-  { id: 's3', num: '03', color: C.violet, Illus: IlluDoc,  title: 'Contrato de Datos',            summary: 'Elige tu plan mensual con ENTEL' },
-  { id: 's4', num: '04', color: C.amber,  Illus: IlluDB,   title: 'Bolsas Adicionales',          summary: '¿Se acabó el plan? Pide más datos' },
-  { id: 's5', num: '05', color: C.green,  Illus: IlluBell, title: 'Alertas de Consumo',          summary: 'Cuándo te avisamos y qué hacer' },
-  { id: 's6', num: '06', color: C.rose,   Illus: IlluTeam, title: '¿Quién hace qué?',            summary: 'Responsabilidades de cada área' },
-  { id: 's7', num: '07', color: C.teal,   Illus: IlluFlow, title: 'Proceso Completo',            summary: 'De inicio a fin, paso a paso' },
+  { id: 's1', num: '01', color: ACCENT, icon: Icons.box,      title: 'Compra del Kit Starlink',     summary: 'Cómo pedir el equipo en ReqLogic' },
+  { id: 's2', num: '02', color: ACCENT, icon: Icons.wifi,     title: 'AP WiFi (FortiAP)',            summary: 'El router WiFi de la obra' },
+  { id: 's3', num: '03', color: ACCENT, icon: Icons.file,     title: 'Contrato de Datos',            summary: 'Elige tu plan mensual con ENTEL' },
+  { id: 's4', num: '04', color: ACCENT, icon: Icons.database, title: 'Bolsas Adicionales',          summary: '¿Se acabó el plan? Pide más datos' },
+  { id: 's5', num: '05', color: ACCENT, icon: Icons.alert,    title: 'Alertas de Consumo',          summary: 'Cuándo te avisamos y qué hacer' },
+  { id: 's6', num: '06', color: ACCENT, icon: Icons.users,    title: '¿Quién hace qué?',            summary: 'Responsabilidades de cada área' },
+  { id: 's7', num: '07', color: ACCENT, icon: Icons.flow,     title: 'Proceso Completo',            summary: 'De inicio a fin, paso a paso' },
 ];
 
 /* ─── Section card ─── */
 
-function SectionCard({ id: _id, num, color, Illus, title, summary, onClick }: typeof SECTIONS[0] & { onClick: () => void }) {
+function SectionCard({ id: _id, num, color, icon, title, summary, onClick }: typeof SECTIONS[0] & { onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className="panel"
       style={{
-        background: hovered ? alpha(color, 0.08) : 'var(--panel)',
-        border: `1px solid ${hovered ? alpha(color, 0.4) : 'var(--line)'}`,
-        borderRadius: 'var(--r)', padding: '22px 20px 18px',
+        background: hovered ? 'var(--panel-2)' : 'var(--panel)',
+        border: `1px solid ${hovered ? 'var(--accent)' : 'var(--line)'}`,
+        padding: '20px 20px 18px',
         cursor: 'pointer', textAlign: 'left', font: 'inherit', color: 'var(--text)',
         display: 'flex', flexDirection: 'column', gap: 14,
-        transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
-        boxShadow: hovered ? `0 12px 32px ${alpha(color, 0.18)}` : 'var(--shadow)',
-        transition: 'all 0.2s ease',
-        position: 'relative', overflow: 'hidden',
+        transition: 'background .15s, border-color .15s',
       }}
     >
-      {/* top accent bar */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-        background: color, opacity: hovered ? 1 : 0.4, transition: 'opacity 0.2s',
-      }} />
-
-      {/* illustration + number */}
+      {/* icon + number */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <Illus c={color} />
+        <IconBadge icon={icon} />
         <span style={{
-          fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 800,
-          color, background: alpha(color, 0.12), border: `1px solid ${alpha(color, 0.25)}`,
+          fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 700,
+          color: 'var(--dim)', background: 'var(--bg-2)', border: '1px solid var(--line)',
           borderRadius: 8, padding: '3px 8px', letterSpacing: '0.05em',
         }}>{num}</span>
       </div>
@@ -483,10 +412,7 @@ function Modal({ section, onClose, onPrev, onNext, hasPrev, hasNext }: {
             background: alpha(section.color, 0.06),
             flexShrink: 0,
           }}>
-            {/* top accent */}
-            <div style={{ position: 'absolute', top: 0, left: 22, right: 22, height: 0 }} />
-
-            <section.Illus c={section.color} />
+            <IconBadge icon={section.icon} size={40} />
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
@@ -581,20 +507,30 @@ function ApCalc({ onClose }: { onClose: () => void }) {
     <div style={{
       position: 'fixed', inset: 0, zIndex: 900,
       background: 'oklch(0 0 0 / 0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20,
     }} onClick={onClose}>
       <div className="panel" style={{
-        padding: '28px 28px 24px', width: 420, maxWidth: '95vw',
+        padding: 0, width: 420, maxWidth: '95vw', maxHeight: '88vh',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        border: `1px solid ${alpha(ACCENT, 0.4)}`,
         boxShadow: '0 24px 60px oklch(0 0 0 / 0.5)',
       }} onClick={(e) => e.stopPropagation()}>
 
         {/* header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0,
+          padding: '20px 22px 18px', borderBottom: `1px solid ${alpha(ACCENT, 0.2)}`, background: alpha(ACCENT, 0.06),
+        }}>
+          <IconBadge icon={Icons.spark} size={40} />
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Calculadora de APs</div>
             <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3 }}>Estimación de puntos de acceso por cobertura</div>
           </div>
           <button className="btn-icon" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
+
+        {/* body */}
+        <div style={{ overflowY: 'auto', padding: '22px' }}>
 
         {/* presets */}
         <div style={{ marginBottom: 18 }}>
@@ -608,7 +544,7 @@ function ApCalc({ onClose }: { onClose: () => void }) {
                     background: active ? 'var(--accent-soft)' : 'var(--bg-2)',
                     color: 'var(--text)',
                     border: `1px solid ${active ? 'var(--accent)' : 'var(--line)'}`,
-                    borderRadius: 9, padding: '9px 11px',
+                    borderRadius: 'var(--r-sm)', padding: '9px 11px',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
                   }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
@@ -656,7 +592,7 @@ function ApCalc({ onClose }: { onClose: () => void }) {
         <div style={{
           background: apCount !== null ? 'var(--accent-soft)' : 'var(--bg-2)',
           border: `1px solid ${apCount !== null ? 'var(--accent)' : 'var(--line)'}`,
-          borderRadius: 12, padding: '16px 18px',
+          borderRadius: 'var(--r-sm)', padding: '16px 18px',
         }}>
           {apCount !== null ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -681,6 +617,7 @@ function ApCalc({ onClose }: { onClose: () => void }) {
 
         <div style={{ marginTop: 12, fontSize: 11, color: 'var(--dim)', textAlign: 'center' }}>
           La eficiencia real varía según obstáculos, interferencia y altura de instalación.
+        </div>
         </div>
       </div>
     </div>
@@ -723,21 +660,21 @@ export default function FAQ() {
         {/* Quick reference strip */}
         <div className="stat-row" style={{ marginBottom: 28 }}>
           {[
-            { icon: '📅', val: '20 días',     label: 'para recibir el equipo',   color: C.blue   },
-            { icon: '💾', val: 'Hasta 6 TB',  label: 'de datos por plan',        color: C.violet },
-            { icon: '🔔', val: '60/80/100%',  label: 'alertas automáticas',      color: C.amber  },
-            { icon: '📧', val: 'Viernes',     label: 'reporte semanal de TI',    color: C.green  },
+            { icon: Icons.clock,    val: '20 días',     label: 'para recibir el equipo' },
+            { icon: Icons.database, val: 'Hasta 6 TB',  label: 'de datos por plan' },
+            { icon: Icons.alert,    val: '60/80/100%',  label: 'alertas automáticas' },
+            { icon: Icons.mail,     val: 'Viernes',     label: 'reporte semanal de TI' },
           ].map((item) => (
-            <div key={item.val} className="stat-card" style={{ borderTop: `3px solid ${item.color}` }}>
-              <span style={{ fontSize: 22 }}>{item.icon}</span>
-              <div className="mono stat-card-value" style={{ color: item.color, marginTop: 6 }}>{item.val}</div>
+            <div key={item.val} className="stat-card">
+              <IconBadge icon={item.icon} size={32} />
+              <div className="mono stat-card-value" style={{ marginTop: 10 }}>{item.val}</div>
               <div className="stat-card-sub">{item.label}</div>
             </div>
           ))}
         </div>
 
         {/* Cards grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12 }}>
+        <div className="faq-cards-grid">
           {SECTIONS.map((s) => (
             <SectionCard key={s.id} {...s} onClick={() => openSection(s.id)} />
           ))}

@@ -4,7 +4,6 @@ import Obras      from './pages/Obras';
 import ObraDetail from './pages/ObraDetail';
 import Antenas    from './pages/Antenas';
 import Consumo    from './pages/Consumo';
-import Reportes   from './pages/Reportes';
 import Ajustes    from './pages/Ajustes';
 import Login      from './pages/Login';
 import AlertsLog  from './pages/AlertsLog';
@@ -20,7 +19,6 @@ export default function App() {
       <Route path="/antenas"    element={<Antenas />} />
       <Route path="/consumo"    element={<Consumo />} />
       <Route path="/alerts"     element={<AlertsLog />} />
-      <Route path="/reportes"   element={<Reportes />} />
       <Route path="/ajustes"    element={<Ajustes />} />
       <Route path="/faq"        element={<FAQ />} />
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -12,8 +12,7 @@ const MENU_ITEMS = [
 ];
 
 const GENERAL_ITEMS = [
-  { label: 'Reportes', icon: Icons.file,     path: '/reportes' },
-  { label: 'Ajustes',  icon: Icons.settings, path: '/ajustes' },
+  { label: 'Ajustes', icon: Icons.settings, path: '/ajustes' },
 ];
 
 export default function Sidebar() {
