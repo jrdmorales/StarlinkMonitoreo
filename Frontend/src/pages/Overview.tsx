@@ -1,140 +1,113 @@
-import { useState, useMemo } from 'react';
-import Sidebar from '../components/layout/Sidebar';
+import Shell from '../components/layout/Shell';
 import Kpi from '../components/ui/Kpi';
-import ObraTable from '../components/obras/ObraTable';
+import DonutGauge from '../components/ui/DonutGauge';
+import AreaChart from '../components/charts/AreaChart';
 import AlertPanel from '../components/obras/AlertPanel';
 import { Icons } from '../components/ui/Icons';
 import { useObras } from '../hooks/useObras';
-import { fmtGB, fmtPct } from '../lib/formatters';
-import type { ObraDto } from '../types/index';
+import { useAggregateHistory } from '../hooks/useAggregateHistory';
+import { fmtGB, fmtGB1, fmtPct } from '../lib/formatters';
 
 export default function Overview() {
   const { data, isLoading, error } = useObras();
-  const [q, setQ] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'risk' | 'warn' | 'ok'>('all');
-
-  const allAntennas = useMemo(() => data?.obras.flatMap((o) => o.antennas) ?? [], [data]);
-
-  const filteredObras = useMemo<ObraDto[]>(() => {
-    if (!data) return [];
-    return data.obras.filter((o) =>
-      (statusFilter === 'all' || o.status === statusFilter) &&
-      (q === '' || o.label.toLowerCase().includes(q.toLowerCase()) || o.key.toLowerCase().includes(q.toLowerCase()))
-    );
-  }, [data, q, statusFilter]);
-
-  const lastUpdatedLabel = useMemo(() => {
-    if (!data?.lastUpdated) return 'Sin datos';
-    const d = new Date(data.lastUpdated);
-    const time = d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-    const today = new Date();
-    const isToday = d.toDateString() === today.toDateString();
-    const dateStr = isToday
-      ? 'hoy'
-      : d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
-    return `${time} · ${dateStr}`;
-  }, [data?.lastUpdated]);
+  const { data: histData, isLoading: histLoading } = useAggregateHistory();
 
   if (isLoading) {
     return (
-      <div className="app">
-        <Sidebar />
-        <div className="content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Shell title="Resumen">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
           <span style={{ color: 'var(--muted)' }}>Cargando datos...</span>
         </div>
-      </div>
+      </Shell>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="app">
-        <Sidebar />
-        <div className="content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Shell title="Resumen">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
           <span style={{ color: 'var(--risk)' }}>Error al cargar datos. Verificar que el backend está corriendo.</span>
         </div>
-      </div>
+      </Shell>
     );
   }
 
   const k = data.kpis;
+  const allAntennas = data.obras.flatMap((o) => o.antennas);
+  const sortedObras = [...data.obras].sort((a, b) => b.usagePct - a.usagePct);
 
   return (
-    <div className="app">
-      <Sidebar />
-      <div className="content">
-        <header className="topbar">
-          <div>
-            <div className="crumb">Resumen general</div>
-            <h1>Consumo Starlink por obra</h1>
-          </div>
-          <div className="topbar-right">
-            <div className="search">
-              <Icons.search size={18} />
-              <input placeholder="Buscar obra…" value={q} onChange={(e) => setQ(e.target.value)} />
-            </div>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              background: 'var(--panel)', border: '1px solid var(--line)',
-              borderRadius: 99, padding: '9px 14px', fontSize: 12.5,
-              color: 'var(--muted)', fontWeight: 600,
-            }}>
-              <Icons.clock size={14} />
-              <span>{lastUpdatedLabel}</span>
-            </div>
-          </div>
-        </header>
+    <Shell title="Resumen">
+      <div className="page-header">
+        <div className="page-eyebrow">Resumen general</div>
+        <h1>Consumo Starlink por obra</h1>
+      </div>
 
-        <div className="kpi-row">
-          <Kpi label="Consumo total (ciclo)" value={fmtGB(k.totalConsumed)} sub={`de ${fmtGB(k.totalLimit)} contratados`} icon={Icons.chart} accent="var(--accent)" />
-          <Kpi label="Uso global"             value={fmtPct(k.globalPct)}   sub={`${fmtGB(k.totalAvailable)} disponibles`} icon={Icons.spark} accent="var(--cyan)" />
-          <Kpi label="Antenas en riesgo"      value={k.riskCount}            sub={`${k.warnCount} en advertencia`}           icon={Icons.alert} accent="var(--risk)" />
-          <Kpi label="Antenas activas"        value={k.antennaCount}         sub={`en ${k.obraCount} obras`}                 icon={Icons.sat}   accent="var(--text)" />
-        </div>
+      <div className="kpi-row">
+        <Kpi label="Consumo total · ciclo" value={fmtGB(k.totalConsumed)} sub={`de ${fmtGB(k.totalLimit)} contratados`} icon={Icons.chart} accent="var(--accent)" />
+        <Kpi label="Antenas en riesgo"     value={k.riskCount}            sub={`${k.warnCount} en advertencia`}          icon={Icons.alert} accent="var(--risk)" />
+        <Kpi label="Antenas activas"       value={k.antennaCount}         sub={`distribuidas en ${k.obraCount} obras`}   icon={Icons.sat}   accent="var(--text)" />
+        <Kpi label="Uso global de la red"  value={fmtPct(k.globalPct)}    sub={`${fmtGB(k.totalAvailable)} disponibles`} icon={Icons.spark} accent="var(--cyan)" />
+      </div>
 
-        <div className="grid-2" style={{ marginBottom: 26 }}>
-          <div className="panel">
-            <div className="panel-head">
-              <h3>Distribución de uso por obra</h3>
-              <span className="muted">{data.obras.length} obras activas</span>
-            </div>
-            <div style={{ display: 'grid', gap: 8 }}>
-              {data.obras.sort((a, b) => b.usagePct - a.usagePct).map((o) => (
-                <div key={o.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ width: 120, fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>{o.label}</span>
-                  <div style={{ flex: 1, background: 'var(--track)', borderRadius: 99, height: 6 }}>
-                    <div style={{
-                      width: `${Math.min(o.usagePct, 100)}%`, height: '100%', borderRadius: 99,
-                      background: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--accent)',
-                      transition: 'width .8s cubic-bezier(.4,0,.2,1)',
-                    }} />
-                  </div>
-                  <span className="mono" style={{ width: 52, textAlign: 'right', fontSize: 12, color: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--text)' }}>
-                    {fmtPct(o.usagePct)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <AlertPanel antennas={allAntennas} />
-        </div>
-
-        <div className="panel obras-panel">
+      <div className="grid-2">
+        <div className="panel">
           <div className="panel-head">
-            <h3><Icons.grid size={17} /> Obras <span className="count-dim">({filteredObras.length})</span></h3>
-            <div className="panel-head-right">
-              <div className="seg">
-                {(['all', 'risk', 'warn', 'ok'] as const).map((v) => (
-                  <button key={v} className={'seg-btn' + (statusFilter === v ? ' on' : '')} onClick={() => setStatusFilter(v)}>
-                    {v === 'all' ? 'Todas' : v === 'risk' ? 'En riesgo' : v === 'warn' ? 'Advertencia' : 'OK'}
-                  </button>
-                ))}
-              </div>
+            <div>
+              <h3>Consumo acumulado del ciclo</h3>
+              <span className="muted">GB consumidos vs. total contratado</span>
             </div>
           </div>
-          <ObraTable obras={filteredObras} />
+          {histLoading
+            ? <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: 13 }}>Cargando...</div>
+            : <AreaChart data={histData?.history ?? []} valueKey="cumulative" id="global" height={200} />}
+        </div>
+
+        <div className="panel" style={{ display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ margin: 0 }}>Uso global de la red</h3>
+          <span className="muted">Porcentaje del total contratado</span>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '14px 0 4px' }}>
+            <DonutGauge pct={k.globalPct} size={170} stroke={15} label="en uso" />
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 'auto' }}>
+            <div style={{ flex: 1, background: 'var(--bg-2)', borderRadius: 11, padding: '11px 13px' }}>
+              <div style={{ fontSize: 11, color: 'var(--dim)', fontWeight: 600 }}>Consumido</div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 800, marginTop: 3 }}>{fmtGB1(k.totalConsumed)}</div>
+            </div>
+            <div style={{ flex: 1, background: 'var(--bg-2)', borderRadius: 11, padding: '11px 13px' }}>
+              <div style={{ fontSize: 11, color: 'var(--dim)', fontWeight: 600 }}>Disponible</div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 800, marginTop: 3, color: 'var(--accent-strong)' }}>{fmtGB1(k.totalAvailable)}</div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      <div className="grid-2">
+        <div className="panel">
+          <div className="panel-head">
+            <h3>Distribución de uso por obra</h3>
+            <span className="muted">{data.obras.length} obras activas</span>
+          </div>
+          <div style={{ display: 'grid', gap: 13 }}>
+            {sortedObras.map((o) => (
+              <div key={o.key} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ width: 110, fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.label}</span>
+                <div style={{ flex: 1, background: 'var(--track)', borderRadius: 99, height: 9 }}>
+                  <div style={{
+                    width: `${Math.min(o.usagePct, 100)}%`, height: '100%', borderRadius: 99,
+                    background: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--accent)',
+                    transition: 'width .8s cubic-bezier(.4,0,.2,1)',
+                  }} />
+                </div>
+                <span className="mono" style={{ width: 54, textAlign: 'right', fontSize: 12.5, fontWeight: 700, color: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--text)' }}>
+                  {fmtPct(o.usagePct)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <AlertPanel antennas={allAntennas} />
+      </div>
+    </Shell>
   );
 }

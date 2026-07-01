@@ -1,4 +1,4 @@
-import { eq, and, gte, desc, max } from 'drizzle-orm';
+import { eq, and, gte, desc, max, inArray } from 'drizzle-orm';
 import { db } from '../client.js';
 import { consumptionLogs, type ConsumptionLogRow } from '../schema.js';
 
@@ -72,6 +72,27 @@ export async function getConsumptionInCycle(
     .where(
       and(
         eq(consumptionLogs.antennaId, antennaId),
+        gte(consumptionLogs.sampledAt, cycleStart),
+      ),
+    )
+    .orderBy(consumptionLogs.sampledAt);
+}
+
+/**
+ * Todos los snapshots de un conjunto de antenas dentro del ciclo activo, en orden cronológico.
+ * Usado para construir el historial agregado (flota completa u obra específica).
+ */
+export async function getConsumptionInCycleForAntennaIds(
+  antennaIds: number[],
+  cycleStart: Date,
+): Promise<ConsumptionLogRow[]> {
+  if (antennaIds.length === 0) return [];
+  return db
+    .select()
+    .from(consumptionLogs)
+    .where(
+      and(
+        inArray(consumptionLogs.antennaId, antennaIds),
         gte(consumptionLogs.sampledAt, cycleStart),
       ),
     )

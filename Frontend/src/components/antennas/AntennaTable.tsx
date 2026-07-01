@@ -11,12 +11,13 @@ interface Props {
   histories: Record<string, HistoryPoint[]>;
   onSelect:  (a: AntennaDto) => void;
   selected:  string | null;
+  showObraColumn?: boolean;
 }
 
 type SortKey = 'code' | 'usagePct' | 'consumed' | 'daysLeft';
 interface SortState { key: SortKey; dir: 1 | -1 }
 
-export default function AntennaTable({ antennas, histories, onSelect, selected }: Props) {
+export default function AntennaTable({ antennas, histories, onSelect, selected, showObraColumn }: Props) {
   const [sort, setSort]   = useState<SortState>({ key: 'usagePct', dir: -1 });
   const [filter, setFilter] = useState<'all' | 'risk' | 'warn' | 'ok'>('all');
 
@@ -54,6 +55,7 @@ export default function AntennaTable({ antennas, histories, onSelect, selected }
           <thead>
             <tr>
               {th('code',     'Antena')}
+              {showObraColumn && <th className="static">Obra</th>}
               {th('usagePct', '% Uso')}
               <th>Uso vs. límite</th>
               {th('consumed',  'Consumo', 'r')}
@@ -72,6 +74,7 @@ export default function AntennaTable({ antennas, histories, onSelect, selected }
                     <div className="cell-code mono">{a.code}</div>
                     <div className="cell-name">{a.name}</div>
                   </td>
+                  {showObraColumn && <td style={{ fontSize: 13, fontWeight: 700 }}>{a.obraLabel}</td>}
                   <td><span className="mono" style={{ color: st.color, fontWeight: 700 }}>{fmtPct(a.usagePct)}</span></td>
                   <td className="usage-cell"><UsageBar pct={a.usagePct} status={a.status} /></td>
                   <td className="r mono">{fmtGB1(a.consumed)}<span className="cell-dim"> / {a.limitGb}</span></td>

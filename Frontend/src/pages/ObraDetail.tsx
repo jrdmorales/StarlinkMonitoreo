@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/layout/Sidebar';
+import Shell from '../components/layout/Shell';
 import Kpi from '../components/ui/Kpi';
 import StatusBadge from '../components/ui/StatusBadge';
 import AntennaTable from '../components/antennas/AntennaTable';
 import AntennaDetail from '../components/antennas/AntennaDetail';
+import AreaChart from '../components/charts/AreaChart';
 import { Icons } from '../components/ui/Icons';
 import { useObras } from '../hooks/useObras';
 import { useAntennaHistory } from '../hooks/useAntennaHistory';
+import { useAggregateHistory } from '../hooks/useAggregateHistory';
 import { fmtGB, fmtPct } from '../lib/formatters';
 import type { AntennaDto } from '../types/index';
 
@@ -21,61 +23,66 @@ export default function ObraDetail() {
   const [selected, setSelected] = useState<AntennaDto | null>(defaultSel);
 
   const { data: histData, isLoading: histLoading } = useAntennaHistory(selected?.code ?? null);
-
-  // Pre-cargar historiales de todas las antenas para sparklines
-  const [histories] = useState<Record<string, never>>({});
+  const { data: obraHistData, isLoading: obraHistLoading } = useAggregateHistory(key);
 
   if (!obra) {
     return (
-      <div className="app">
-        <Sidebar />
-        <div className="content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Shell title="Detalle de obra">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
           <span style={{ color: 'var(--muted)' }}>{data ? `Obra '${key}' no encontrada` : 'Cargando...'}</span>
         </div>
-      </div>
+      </Shell>
     );
   }
 
   return (
-    <div className="app">
-      <Sidebar />
-      <div className="content">
-        <header className="topbar">
-          <div className="crumb-row">
-            <button className="back" onClick={() => navigate('/')}><Icons.back size={18} /></button>
-            <div>
-              <div className="crumb">Obras / {obra.key}</div>
-              <h1>{obra.label}</h1>
-            </div>
-          </div>
-          <div className="topbar-right">
+    <Shell title={obra.label}>
+      <button className="back" onClick={() => navigate('/obras')}><Icons.back size={15} />Volver</button>
+
+      <div className="page-header-row" style={{ marginBottom: 22 }}>
+        <div>
+          <div className="page-eyebrow">Obra · {obra.key}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+            <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.022em' }}>{obra.label}</h1>
             <StatusBadge status={obra.status}>
               {obra.riskCount > 0 ? `${obra.riskCount} en riesgo` : obra.warnCount > 0 ? `${obra.warnCount} en advertencia` : 'Todo en orden'}
             </StatusBadge>
           </div>
-        </header>
-
-        <div className="kpi-row">
-          <Kpi label="Consumo de la obra"  value={fmtGB(obra.consumed)}   sub={`de ${fmtGB(obra.limitGb)} contratados`}      icon={Icons.chart} accent="var(--accent)" />
-          <Kpi label="Uso promedio"         value={fmtPct(obra.usagePct)}  sub={`${fmtGB(obra.available)} disponibles`}         icon={Icons.spark} accent="var(--cyan)" />
-          <Kpi label="Antenas"              value={obra.antennaCount}       sub={`${obra.riskCount} en riesgo · ${obra.warnCount} adv.`} icon={Icons.sat} accent="var(--text)" />
-          <Kpi label="Próximo corte"        value={`${obra.minDaysLeft} días`} sub="antena más cercana al término"              icon={Icons.clock} accent={obra.minDaysLeft <= 7 ? 'var(--risk)' : 'var(--text)'} />
-        </div>
-
-        <div className="detail-layout">
-          <AntennaTable
-            antennas={obra.antennas}
-            histories={histories}
-            onSelect={(a) => setSelected(a)}
-            selected={selected?.code ?? null}
-          />
-          <AntennaDetail
-            antenna={selected}
-            history={histData?.history ?? []}
-            loading={histLoading}
-          />
         </div>
       </div>
-    </div>
+
+      <div className="kpi-row">
+        <Kpi label="Consumo de la obra"  value={fmtGB(obra.consumed)}   sub={`de ${fmtGB(obra.limitGb)} contratados`}      icon={Icons.chart} accent="var(--accent)" />
+        <Kpi label="Uso promedio"         value={fmtPct(obra.usagePct)}  sub={`${fmtGB(obra.available)} disponibles`}         icon={Icons.spark} accent="var(--cyan)" />
+        <Kpi label="Antenas"              value={obra.antennaCount}       sub={`${obra.riskCount} en riesgo · ${obra.warnCount} adv.`} icon={Icons.sat} accent="var(--text)" />
+        <Kpi label="Próximo corte"        value={`${obra.minDaysLeft} días`} sub="antena más cercana al término"              icon={Icons.clock} accent={obra.minDaysLeft <= 7 ? 'var(--risk)' : 'var(--text)'} />
+      </div>
+
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-head">
+          <div>
+            <h3>Consumo acumulado · {obra.label}</h3>
+            <span className="muted">GB consumidos vs. límite contratado de la obra</span>
+          </div>
+        </div>
+        {obraHistLoading
+          ? <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: 13 }}>Cargando...</div>
+          : <AreaChart data={obraHistData?.history ?? []} valueKey="cumulative" id={'obra-' + obra.key} height={180} />}
+      </div>
+
+      <div className="detail-layout">
+        <AntennaTable
+          antennas={obra.antennas}
+          histories={{}}
+          onSelect={(a) => setSelected(a)}
+          selected={selected?.code ?? null}
+        />
+        <AntennaDetail
+          antenna={selected}
+          history={histData?.history ?? []}
+          loading={histLoading}
+        />
+      </div>
+    </Shell>
   );
 }

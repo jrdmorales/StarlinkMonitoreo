@@ -1,10 +1,20 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { refreshConsumption } from '../../services/consumption.service.js';
+import { refreshConsumption, getAggregateHistory } from '../../services/consumption.service.js';
 import { checkAndSendAlerts } from '../../services/alert.service.js';
 import { sendEmail } from '../../services/email.service.js';
 import { config } from '../../lib/config.js';
 
 const consumptionRoutes: FastifyPluginAsync = async (fastify) => {
+
+  /**
+   * Historial agregado de consumo del ciclo activo (todas las antenas, o
+   * solo las de una obra si se pasa `obraKey`). Alimenta los gráficos de
+   * tendencia de Resumen, Consumo y el Detalle de obra.
+   */
+  fastify.get<{ Querystring: { obraKey?: string } }>('/history', async (req, reply) => {
+    const history = await getAggregateHistory(req.query.obraKey);
+    return reply.send({ history });
+  });
 
   /**
    * Dispara un fetch manual de New Relic y persiste los datos.

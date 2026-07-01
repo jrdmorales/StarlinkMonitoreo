@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import Sidebar from '../components/layout/Sidebar';
+import Shell from '../components/layout/Shell';
 import { Icons } from '../components/ui/Icons';
 import { useAlertLog, useAlertPreview } from '../hooks/useAlertLog';
 import type { AlertLogEntry } from '../types/index';
@@ -58,51 +58,45 @@ export default function AlertsLog() {
     `${e.obraKey}-${e.threshold}-${fmtDateTime(e.sentAt).date}`;
 
   return (
-    <div className="app">
-      <Sidebar />
-      <div className="content">
-        <header className="topbar">
-          <div>
-            <div className="crumb">Monitoreo</div>
-            <h1>Registro de alertas</h1>
-          </div>
-          <div className="topbar-right">
-            <div className="seg">
-              {([['all', 'Todas'] as const, ...availableThresholds.map((t) => [t, `${t}%`] as const)]).map(([v, l]) => (
-                <button
-                  key={String(v)}
-                  className={'seg-btn' + (filterThreshold === v ? ' on' : '')}
-                  onClick={() => setFilterThreshold(v)}
-                  style={filterThreshold !== v && v !== 'all'
-                    ? { color: getThresholdStyle(v as number).color }
-                    : {}
-                  }
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-          </div>
-        </header>
+    <Shell title="Alertas">
+      <div className="page-header">
+        <div className="page-eyebrow">Monitoreo</div>
+        <h1>Alertas y eventos</h1>
+      </div>
 
-        {isLoading && <div className="empty">Cargando historial...</div>}
+      {isLoading && <div className="empty">Cargando historial...</div>}
 
-        {!isLoading && data?.alerts.length === 0 && (
-          <div className="empty" style={{ marginTop: 60, fontSize: 14 }}>
-            No se han enviado alertas aún.
-          </div>
-        )}
+      {!isLoading && data?.alerts.length === 0 && (
+        <div className="empty" style={{ marginTop: 60, fontSize: 14 }}>
+          No se han enviado alertas aún.
+        </div>
+      )}
 
-        {!isLoading && (data?.alerts.length ?? 0) > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 16, alignItems: 'start' }}>
+      {!isLoading && (data?.alerts.length ?? 0) > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 16, alignItems: 'start' }}>
 
-            {/* ── Lista de alertas ───────────────────────────────────────── */}
-            <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid var(--line)' }}>
-                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>
-                  Enviadas ({data?.alerts.length ?? 0})
-                </h3>
+          {/* ── Lista de alertas ───────────────────────────────────────── */}
+          <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>
+                Enviadas ({data?.alerts.length ?? 0})
+              </h3>
+              <div className="seg sm">
+                {([['all', 'Todas'] as const, ...availableThresholds.map((t) => [t, `${t}%`] as const)]).map(([v, l]) => (
+                  <button
+                    key={String(v)}
+                    className={'seg-btn' + (filterThreshold === v ? ' on' : '')}
+                    onClick={() => setFilterThreshold(v)}
+                    style={filterThreshold !== v && v !== 'all'
+                      ? { color: getThresholdStyle(v as number).color }
+                      : {}
+                    }
+                  >
+                    {l}
+                  </button>
+                ))}
               </div>
+            </div>
               <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 {grouped.map(([date, entries]) => {
                   const seen = new Set<string>();
@@ -229,9 +223,8 @@ export default function AlertsLog() {
               )}
             </div>
 
-          </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </Shell>
   );
 }

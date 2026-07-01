@@ -15,6 +15,12 @@ export default function DonutGauge({ pct, size = 168, stroke = 16, label, sub }:
   const st  = STATUS_CONFIG[pct >= RISK_THRESHOLD ? 'risk' : pct >= WARN_THRESHOLD ? 'warn' : 'ok'];
   const off = c * (1 - Math.min(pct, 100) / 100);
 
+  // Tamaños de texto proporcionales al diámetro — a tamaños chicos el font-size fijo
+  // se solapaba con el label y con el trazo del anillo.
+  const pctSize   = Math.round(size * 0.2);
+  const labelSize = Math.round(size * 0.08);
+  const subSize   = Math.round(size * 0.075);
+
   return (
     <div className="donut" style={{ width: size, height: size }}>
       <svg width={size} height={size}>
@@ -25,9 +31,9 @@ export default function DonutGauge({ pct, size = 168, stroke = 16, label, sub }:
                 style={{ transition: 'stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)' }} />
       </svg>
       <div className="donut-center">
-        <div className="donut-pct" style={{ color: st.color }}>{fmtPct(pct)}</div>
-        {label && <div className="donut-label">{label}</div>}
-        {sub   && <div className="donut-sub">{sub}</div>}
+        <div className="donut-pct" style={{ color: st.color, fontSize: pctSize }}>{fmtPct(pct)}</div>
+        {label && <div className="donut-label" style={{ fontSize: labelSize }}>{label}</div>}
+        {sub   && <div className="donut-sub" style={{ fontSize: subSize }}>{sub}</div>}
       </div>
     </div>
   );

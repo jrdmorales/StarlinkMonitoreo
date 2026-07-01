@@ -8,6 +8,7 @@ import {
   insertConsumptionLog,
   getLatestConsumptionByAntenna,
   getConsumptionInCycle,
+  getConsumptionInCycleForAntennaIds,
 } from '../db/repositories/consumption.repo.js';
 import type { AntennaDto, ObraDto, HistoryPoint, GlobalKpis } from '../types/index.js';
 
@@ -168,6 +169,63 @@ export async function getAntennaHistory(code: string): Promise<HistoryPoint[]> {
       daily:      round2(Math.max(0, cumulative - prevCum)),
       cumulative: round2(cumulative),
     });
+  }
+
+  return points;
+}
+
+/**
+ * Historial agregado de consumo del ciclo activo, sumando todas las antenas
+ * (o solo las de una obra si se pasa `obraKey`). Usado para el gráfico de
+ * tendencia global de Resumen/Consumo y el gráfico por obra del Detalle.
+ * Para cada día, suma el último valor acumulado conocido de cada antena
+ * (carry-forward) — así una antena sin snapshot ese día no baja el total.
+ */
+export async function getAggregateHistory(obraKey?: string): Promise<HistoryPoint[]> {
+  const { start }   = getCurrentCycle();
+  const obras       = await getObrasWithAntennas();
+  const scopedObras = obraKey ? obras.filter((o) => o.key === obraKey) : obras;
+  const antennaIds  = scopedObras.flatMap((o) => o.antennas.map((a) => a.id));
+  if (antennaIds.length === 0) return [];
+
+  const logs = await getConsumptionInCycleForAntennaIds(antennaIds, start);
+  if (logs.length === 0) return [];
+
+  // Por antena: fecha -> mayor consumo acumulado registrado ese día
+  const perAntennaByDate = new Map<number, Map<string, number>>();
+  const allDates = new Set<string>();
+  for (const log of logs) {
+    const day = new Date(log.sampledAt).toISOString().slice(0, 10);
+    allDates.add(day);
+
+    let byDate = perAntennaByDate.get(log.antennaId);
+    if (!byDate) {
+      byDate = new Map();
+      perAntennaByDate.set(log.antennaId, byDate);
+    }
+    const consumed = Number(log.consumedGb);
+    const current  = byDate.get(day) ?? -1;
+    if (consumed > current) byDate.set(day, consumed);
+  }
+
+  const dates = Array.from(allDates).sort();
+  const lastKnown = new Map<number, number>();
+  const points: HistoryPoint[] = [];
+  let prevTotal = 0;
+
+  for (const day of dates) {
+    let total = 0;
+    for (const antennaId of antennaIds) {
+      const value = perAntennaByDate.get(antennaId)?.get(day);
+      if (value !== undefined) lastKnown.set(antennaId, value);
+      total += lastKnown.get(antennaId) ?? 0;
+    }
+    points.push({
+      date:       day,
+      daily:      round2(Math.max(0, total - prevTotal)),
+      cumulative: round2(total),
+    });
+    prevTotal = total;
   }
 
   return points;

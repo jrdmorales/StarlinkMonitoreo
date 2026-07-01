@@ -53,7 +53,7 @@ export default function AntennaDetail({ antenna, history, loading }: Props) {
       </div>
 
       <div className="detail-gauge">
-        <DonutGauge pct={antenna.usagePct} size={150} stroke={14} label="de uso" />
+        <DonutGauge pct={antenna.usagePct} size={140} stroke={13} label="de uso" />
       </div>
       <div className="detail-gauge-cap mono">
         {fmtGB1(antenna.consumed)} <span>/ {fmtGB(antenna.limitGb)}</span>
@@ -99,8 +99,8 @@ export default function AntennaDetail({ antenna, history, loading }: Props) {
       <div className="detail-chart">
         <div className="dc-title">Consumo acumulado en el ciclo</div>
         {loading
-          ? <div style={{ height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: 13 }}>Cargando...</div>
-          : <AreaChart data={history} valueKey="cumulative" accent={accent} id={'d' + antenna.code} height={150} />
+          ? <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: 13 }}>Cargando...</div>
+          : <AreaChart data={history} valueKey="cumulative" accent={accent} id={'d' + antenna.code} height={100} />
         }
       </div>
     </div>

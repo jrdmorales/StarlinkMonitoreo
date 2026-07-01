@@ -32,4 +32,9 @@ export const Icons = {
   refresh: (p: IconProps) => <Icon {...p}><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></Icon>,
   book:    (p: IconProps) => <Icon {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></Icon>,
   chevron: (p: IconProps) => <Icon {...p}><path d="m6 9 6 6 6-6"/></Icon>,
+  box:     (p: IconProps) => <Icon {...p}><path d="M12 3 21 8 12 13 3 8z"/><path d="M3 13l9 5 9-5M3 18l9 5 9-5" opacity=".55"/></Icon>,
+  settings:(p: IconProps) => <Icon {...p}><path d="M5 7h14M5 12h14M5 17h14"/><circle cx="9" cy="7" r="2" fill="var(--panel)"/><circle cx="15" cy="12" r="2" fill="var(--panel)"/><circle cx="8" cy="17" r="2" fill="var(--panel)"/></Icon>,
+  file:    (p: IconProps) => <Icon {...p}><path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M8 13h8M8 17h5"/></Icon>,
+  sun:     (p: IconProps) => <Icon {...p}><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></Icon>,
+  moon:    (p: IconProps) => <Icon {...p}><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></Icon>,
 };

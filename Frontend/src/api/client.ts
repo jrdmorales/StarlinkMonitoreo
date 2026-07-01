@@ -7,6 +7,20 @@ export const token = {
   clear: (): void           => localStorage.removeItem(TOKEN_KEY),
 };
 
+interface TokenPayload { sub: number; email: string; role: string }
+
+/** Decodifica los claims del JWT actual (sin verificar firma) para mostrar datos de cuenta en la UI. */
+export function getTokenPayload(): TokenPayload | null {
+  const t = token.get();
+  if (!t) return null;
+  try {
+    const [, payload] = t.split('.');
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as TokenPayload;
+  } catch {
+    return null;
+  }
+}
+
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);

@@ -12,8 +12,7 @@ export default function AlertPanel({ antennas }: Props) {
   const navigate = useNavigate();
   const list = [...antennas]
     .filter((a) => a.status !== 'ok')
-    .sort((a, b) => b.usagePct - a.usagePct)
-    .slice(0, 6);
+    .sort((a, b) => b.usagePct - a.usagePct);
 
   return (
     <div className="panel alerts">
