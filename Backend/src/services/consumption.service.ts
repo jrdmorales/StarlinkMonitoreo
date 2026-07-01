@@ -54,7 +54,7 @@ export async function refreshConsumption(): Promise<{ saved: number; skipped: nu
       cycleEnd:   formatDateISO(cycle.end),
       consumedGb: reading.consumedGb,
       limitGb:    antenna.limitGb,
-      usagePct:   reading.usagePct,
+      usagePct:   antenna.limitGb > 0 ? (reading.consumedGb / antenna.limitGb) * 100 : 0,
     });
 
     if (inserted) saved++;
