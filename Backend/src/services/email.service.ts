@@ -152,6 +152,15 @@ function statusBg(s: 'ok' | 'warn' | 'risk'): string {
 function statusLabel(s: 'ok' | 'warn' | 'risk'): string {
   return s === 'risk' ? 'En riesgo' : s === 'warn' ? 'Advertencia' : 'OK';
 }
+/** Escapa valores dinámicos (nombre de antena, label de obra) antes de interpolarlos en HTML. */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 function f1(n: number): string { return n.toFixed(1); }
 function f2(n: number): string { return n.toFixed(2); }
 function fmtDate(iso: string): string {
@@ -194,8 +203,8 @@ function antennaCard(ant: AntennaDto): string {
         <td bgcolor="${CLR.panel}" style="background:${CLR.panel};padding:14px 18px 12px;border-bottom:1px solid ${CLR.line};">
           <table width="100%" cellpadding="0" cellspacing="0"><tr>
             <td>
-              <div style="font-family:${CLR.mono};font-size:14px;font-weight:700;color:${CLR.text};letter-spacing:0.02em;">${ant.code}</div>
-              <div style="font-size:11px;color:${CLR.dim};margin-top:3px;font-family:${CLR.mono};word-break:break-all;">${ant.name ?? ''}</div>
+              <div style="font-family:${CLR.mono};font-size:14px;font-weight:700;color:${CLR.text};letter-spacing:0.02em;">${esc(ant.code)}</div>
+              <div style="font-size:11px;color:${CLR.dim};margin-top:3px;font-family:${CLR.mono};word-break:break-all;">${esc(ant.name ?? '')}</div>
             </td>
             <td align="right" valign="top">
               <span style="display:inline-block;background:${sb};color:${sc};font-size:11px;font-weight:700;
@@ -304,7 +313,7 @@ export function buildAlertEmailHtml(params: {
     <tr>
       <td bgcolor="${tCfg.hdrBg}" style="background:${tCfg.hdrBg};padding:20px 22px 16px;border-left:4px solid ${tCfg.accent};border-right:1px solid ${CLR.line};">
         <div style="font-size:10px;font-weight:700;color:${tCfg.accent};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;font-family:${CLR.sans};">Obra</div>
-        <div style="font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;margin-bottom:4px;font-family:${CLR.sans};">${params.obra.label}</div>
+        <div style="font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;margin-bottom:4px;font-family:${CLR.sans};">${esc(params.obra.label)}</div>
         <div style="font-size:12px;color:rgba(255,255,255,0.6);font-family:${CLR.sans};">
           Ciclo ${params.cycleStart} &#8212; ${params.cycleEnd}
           &nbsp;&#183;&nbsp;
@@ -418,7 +427,7 @@ export function buildReportEmailHtml(params: {
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
         <td>
           <div style="font-size:10px;font-weight:700;color:${accent};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;font-family:${CLR.sans};">Obra</div>
-          <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;margin-bottom:4px;font-family:${CLR.sans};">${params.obra.label}</div>
+          <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;margin-bottom:4px;font-family:${CLR.sans};">${esc(params.obra.label)}</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.6);font-family:${CLR.sans};">
             ${params.reportDate} &nbsp;&#183;&nbsp; Ciclo ${params.cycleStart} &#8212; ${params.cycleEnd}
           </div>

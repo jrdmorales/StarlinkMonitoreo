@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import { requireAdmin } from '../../middleware/auth.js';
 import { db } from '../../../db/client.js';
 import { starlinkAccounts, starlinkDataUsage, starlinkUserTerminals } from '../../../db/starlink-schema.js';
@@ -7,6 +8,15 @@ import { encrypt } from '../../../lib/crypto.js';
 import { syncUserTerminals, getTerminalsForAccount } from '../../../services/starlink/terminals.js';
 import { fetchAndPersistDataUsage } from '../../../services/starlink/dataUsage.js';
 import { runStarlinkSyncForAllAccounts } from '../../../jobs/starlinkSync.js';
+
+const accountSchema = z.object({
+  obraId:            z.number().int().positive(),
+  starlinkAccountId: z.string().min(1),
+  clientId:          z.string().min(1),
+  clientSecret:      z.string().min(1),
+});
+
+const idParamSchema = z.object({ id: z.string().uuid('ID inválido') });
 
 const starlinkAdminRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.addHook('preHandler', requireAdmin);
@@ -26,15 +36,12 @@ const starlinkAdminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   /** Crea o actualiza una cuenta Starlink para una obra */
-  fastify.post<{
-    Body: {
-      obraId:            number;
-      starlinkAccountId: string;
-      clientId:          string;
-      clientSecret:      string;
-    };
-  }>('/accounts', async (req, reply) => {
-    const { obraId, starlinkAccountId, clientId, clientSecret } = req.body;
+  fastify.post('/accounts', async (req, reply) => {
+    const body = accountSchema.safeParse(req.body);
+    if (!body.success) {
+      return reply.code(400).send({ error: 'Datos inválidos', details: body.error.flatten() });
+    }
+    const { obraId, starlinkAccountId, clientId, clientSecret } = body.data;
 
     let clientSecretEncrypted: string;
     try {
@@ -61,15 +68,21 @@ const starlinkAdminRoutes: FastifyPluginAsync = async (fastify) => {
 
   /** Elimina una cuenta Starlink (cascade elimina tokens y terminales) */
   fastify.delete<{ Params: { id: string } }>('/accounts/:id', async (req, reply) => {
-    await db.delete(starlinkAccounts).where(eq(starlinkAccounts.id, req.params.id));
+    const params = idParamSchema.safeParse(req.params);
+    if (!params.success) return reply.code(400).send({ error: 'ID inválido' });
+
+    await db.delete(starlinkAccounts).where(eq(starlinkAccounts.id, params.data.id));
     return reply.send({ ok: true });
   });
 
   /** Sincroniza terminales + consumo para una cuenta específica */
   fastify.post<{ Params: { id: string } }>('/accounts/:id/sync', async (req, reply) => {
+    const params = idParamSchema.safeParse(req.params);
+    if (!params.success) return reply.code(400).send({ error: 'ID inválido' });
+
     const [account] = await db.select()
       .from(starlinkAccounts)
-      .where(eq(starlinkAccounts.id, req.params.id))
+      .where(eq(starlinkAccounts.id, params.data.id))
       .limit(1);
     if (!account) return reply.code(404).send({ error: 'Cuenta no encontrada' });
 
@@ -95,9 +108,12 @@ const starlinkAdminRoutes: FastifyPluginAsync = async (fastify) => {
 
   /** Terminales registrados para una cuenta */
   fastify.get<{ Params: { id: string } }>('/accounts/:id/terminals', async (req, reply) => {
+    const params = idParamSchema.safeParse(req.params);
+    if (!params.success) return reply.code(400).send({ error: 'ID inválido' });
+
     const terminals = await db.select()
       .from(starlinkUserTerminals)
-      .where(eq(starlinkUserTerminals.starlinkAccountId, req.params.id));
+      .where(eq(starlinkUserTerminals.starlinkAccountId, params.data.id));
 
     return reply.send({ terminals });
   });

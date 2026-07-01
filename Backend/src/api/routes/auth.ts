@@ -41,7 +41,12 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     });
   });
 
-  /** Autenticación: retorna JWT válido por 8 horas */
+  /**
+   * Autenticación: retorna JWT válido por 60 días.
+   * Vida larga deliberada (decisión de producto) — el token se guarda en
+   * localStorage del frontend, sin mecanismo de revocación salvo rotar
+   * JWT_SECRET (invalida todas las sesiones activas).
+   */
   fastify.post('/login', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (req, reply) => {
     const body = loginSchema.safeParse(req.body);
     if (!body.success) {

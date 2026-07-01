@@ -26,6 +26,10 @@ async function main(): Promise<void> {
         ? { target: 'pino-pretty', options: { colorize: true, ignore: 'pid,hostname' } }
         : undefined,
     },
+    // Detrás de nginx (ver Frontend/nginx.conf) — usa X-Forwarded-For para
+    // request.ip real, necesario para que el rate limiter no comparta un
+    // solo balde entre todos los usuarios.
+    trustProxy: true,
   });
 
   await app.register(cors, {

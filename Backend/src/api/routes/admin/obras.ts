@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { eq, count } from 'drizzle-orm';
 import { z } from 'zod';
-import { requireAuth } from '../../middleware/auth.js';
+import { requireAdmin } from '../../middleware/auth.js';
 import { db } from '../../../db/client.js';
 import { obras, antennas } from '../../../db/schema.js';
 import { getObrasWithAntennas } from '../../../services/consumption.service.js';
@@ -23,7 +23,7 @@ const updateSchema = z.object({
 });
 
 const adminObrasRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.addHook('preHandler', requireAuth);
+  fastify.addHook('preHandler', requireAdmin);
 
   /** Lista todas las obras con conteo de antenas activas */
   fastify.get('/', async (_req, reply) => {

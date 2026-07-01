@@ -4,6 +4,8 @@ services:
     environment:
       POSTGRES_DB: starlink
       POSTGRES_USER: starlink
+      # El default starlink_dev es solo para desarrollo local — en producción,
+      # setear POSTGRES_PASSWORD en el .env del host con un valor fuerte.
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-starlink_dev}
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -18,7 +20,7 @@ services:
       context: ./Backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://starlink:starlink_dev@postgres:5432/starlink
+      DATABASE_URL: postgresql://starlink:${POSTGRES_PASSWORD:-starlink_dev}@postgres:5432/starlink
       NODE_ENV: production
       PORT: 3000
       NEWRELIC_API_KEY: ${NEWRELIC_API_KEY}
@@ -39,7 +41,7 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     ports:
-      - "172.30.10.172:32769:80"
+      - "172.30.10.172:32770:80"
     depends_on:
       - backend
     restart: unless-stopped

@@ -3,6 +3,7 @@ import { refreshConsumption, getAggregateHistory } from '../../services/consumpt
 import { checkAndSendAlerts } from '../../services/alert.service.js';
 import { sendEmail } from '../../services/email.service.js';
 import { config } from '../../lib/config.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 const consumptionRoutes: FastifyPluginAsync = async (fastify) => {
 
@@ -19,9 +20,8 @@ const consumptionRoutes: FastifyPluginAsync = async (fastify) => {
   /**
    * Dispara un fetch manual de New Relic y persiste los datos.
    * Útil durante desarrollo y para forzar una actualización desde el panel admin.
-   * En producción este endpoint estará protegido por JWT (Fase 3).
    */
-  fastify.post('/refresh', async (_req, reply) => {
+  fastify.post('/refresh', { preHandler: requireAdmin }, async (_req, reply) => {
     const start  = Date.now();
     const result = await refreshConsumption();
     return reply.send({
@@ -35,7 +35,7 @@ const consumptionRoutes: FastifyPluginAsync = async (fastify) => {
    * Evalúa y envía alertas de email manualmente.
    * Útil para testing del sistema de alertas sin esperar el cron.
    */
-  fastify.post('/alerts/check', async (_req, reply) => {
+  fastify.post('/alerts/check', { preHandler: requireAdmin }, async (_req, reply) => {
     const start  = Date.now();
     const result = await checkAndSendAlerts();
     return reply.send({
@@ -46,7 +46,7 @@ const consumptionRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   /** Envía un email de prueba al SMTP_USER configurado */
-  fastify.post('/alerts/test-email', async (_req, reply) => {
+  fastify.post('/alerts/test-email', { preHandler: requireAdmin }, async (_req, reply) => {
     const to = config.SMTP_USER;
     if (!to) {
       return reply.code(400).send({ error: 'SMTP_USER no configurado en .env' });

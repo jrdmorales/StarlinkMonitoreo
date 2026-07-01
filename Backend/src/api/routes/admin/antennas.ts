@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { requireAuth } from '../../middleware/auth.js';
+import { requireAdmin } from '../../middleware/auth.js';
 import { db } from '../../../db/client.js';
 import { antennas, obras } from '../../../db/schema.js';
 import {
@@ -34,8 +34,8 @@ const updateSchema = z.object({
 });
 
 const adminAntennasRoutes: FastifyPluginAsync = async (fastify) => {
-  // Todas las rutas de este plugin requieren JWT
-  fastify.addHook('preHandler', requireAuth);
+  // Todas las rutas de este plugin requieren rol admin (escriben datos)
+  fastify.addHook('preHandler', requireAdmin);
 
   /** Lista todas las antenas (activas e inactivas) con datos de su obra */
   fastify.get('/', async (_req, reply) => {
