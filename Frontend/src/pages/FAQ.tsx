@@ -9,12 +9,15 @@ const ACCENT = 'var(--accent)';
 /** Deriva un tono translúcido del color recibido — funciona tanto con var(--x) como con hex/oklch. */
 const alpha = (c: string, a: number) => `color-mix(in srgb, ${c} ${Math.round(a * 100)}%, transparent)`;
 
-/** Icono de sección envuelto en una insignia circular, igual al patrón de .report-card-icon / .kpi-ic. */
-function IconBadge({ icon: I, size = 44 }: { icon: (p: { size?: number; stroke?: string }) => React.ReactNode; size?: number }) {
+/** Icono envuelto en una insignia circular, igual al patrón de .report-card-icon / .kpi-ic.
+ *  El color por defecto es el acento único del dashboard; se puede pasar otro de los
+ *  colores ya existentes en la app (var(--cyan), var(--warn), var(--risk)) para dar variedad
+ *  sin salir de la paleta real (nada de tonos inventados). */
+function IconBadge({ icon: I, size = 44, color = ACCENT }: { icon: (p: { size?: number; stroke?: string }) => React.ReactNode; size?: number; color?: string }) {
   return (
     <span style={{
       width: size, height: size, flexShrink: 0, borderRadius: size >= 40 ? 12 : 9,
-      background: 'var(--accent-soft)', color: 'var(--accent-strong)',
+      background: alpha(color, 0.14), color,
       display: 'grid', placeItems: 'center',
     }}>
       <I size={Math.round(size * 0.42)} />
@@ -485,22 +488,18 @@ function Modal({ section, onClose, onPrev, onNext, hasPrev, hasNext }: {
 
 /* ─── AP Coverage Calculator ─── */
 function ApCalc({ onClose }: { onClose: () => void }) {
-  const [area,       setArea      ] = useState('');
-  const [apRange,    setApRange   ] = useState('30');
-  const [efficiency, setEfficiency] = useState('70');
+  const [area,     setArea    ] = useState('');
+  const [coverage, setCoverage] = useState('110');
 
-  const areaNum = parseFloat(area);
-  const rangeNum = parseFloat(apRange);
-  const effNum   = parseFloat(efficiency) / 100;
-
-  const apAreaEff = rangeNum > 0 ? Math.PI * rangeNum * rangeNum * effNum : 0;
-  const apCount   = areaNum > 0 && apAreaEff > 0 ? Math.ceil(areaNum / apAreaEff) : null;
+  const areaNum     = parseFloat(area);
+  const coverageNum = parseFloat(coverage);
+  const apCount      = areaNum > 0 && coverageNum > 0 ? Math.ceil(areaNum / coverageNum) : null;
 
   const presets = [
-    { label: 'Interior estrecho',  range: '15', eff: '65', desc: 'Pasillos, bodegas con racks, pisos con muchas paredes o tabiques. Señal se degrada rápido.' },
-    { label: 'Interior abierto',   range: '25', eff: '70', desc: 'Oficinas abiertas, comedores, salas de reunión sin divisiones. Paredes de yeso o vidrio.' },
-    { label: 'Exterior / obra',    range: '40', eff: '60', desc: 'Faenas al aire libre, campamentos, patios de maniobra. Maquinaria y estructuras bloquean parte de la señal.' },
-    { label: 'Exterior amplio',    range: '60', eff: '55', desc: 'Estacionamientos, canchas, terrenos planos sin obstáculos. Máxima distancia, mínima interferencia.' },
+    { label: 'Interior con obstáculos', coverage: '80',  desc: 'Pasillos, bodegas con racks, muros y tabiques. En interiores un AP cubre entre 70 y 150 m² — usa el rango bajo si hay muchas divisiones.' },
+    { label: 'Interior abierto',        coverage: '140', desc: 'Oficinas abiertas, comedores, salas sin divisiones. Cerca del máximo del rango interior (70-150 m²).' },
+    { label: 'Exterior con obstáculos', coverage: '160', desc: 'Faenas, campamentos, patios de maniobra. En exteriores el alcance parte en 150 m² y sube con menos interferencia.' },
+    { label: 'Exterior abierto',        coverage: '220', desc: 'Estacionamientos, canchas, terrenos planos sin obstáculos. Puede superar los 200 m² por AP.' },
   ];
 
   return (
@@ -537,9 +536,9 @@ function ApCalc({ onClose }: { onClose: () => void }) {
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Presets</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
             {presets.map((p) => {
-              const active = apRange === p.range && efficiency === p.eff;
+              const active = coverage === p.coverage;
               return (
-                <button key={p.label} onClick={() => { setApRange(p.range); setEfficiency(p.eff); }}
+                <button key={p.label} onClick={() => setCoverage(p.coverage)}
                   style={{
                     background: active ? 'var(--accent-soft)' : 'var(--bg-2)',
                     color: 'var(--text)',
@@ -551,7 +550,7 @@ function ApCalc({ onClose }: { onClose: () => void }) {
                     <span style={{ color: active ? 'var(--accent-strong)' : 'var(--text)' }}>{p.label}</span>
                     {active && <span style={{ fontSize: 9, background: 'var(--accent)', color: '#fff', borderRadius: 99, padding: '1px 6px', fontWeight: 700, letterSpacing: '0.05em' }}>ACTIVO</span>}
                   </div>
-                  <div style={{ fontSize: 10.5, color: 'var(--muted)', fontFamily: 'monospace', marginBottom: 5 }}>r={p.range}m · {p.eff}% ef.</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--muted)', fontFamily: 'monospace', marginBottom: 5 }}>{p.coverage} m² por AP</div>
                   <div style={{ fontSize: 11, color: 'var(--dim)', fontWeight: 400, lineHeight: 1.4 }}>{p.desc}</div>
                 </button>
               );
@@ -562,9 +561,8 @@ function ApCalc({ onClose }: { onClose: () => void }) {
         {/* inputs */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Área total a cubrir', unit: 'm²', val: area,       set: setArea,       placeholder: 'ej: 1500' },
-            { label: 'Radio de cobertura AP', unit: 'm', val: apRange,   set: setApRange,    placeholder: 'ej: 30' },
-            { label: 'Eficiencia real',      unit: '%',  val: efficiency, set: setEfficiency, placeholder: 'ej: 70' },
+            { label: 'Área total a cubrir', unit: 'm²', val: area,     set: setArea,     placeholder: 'ej: 1500' },
+            { label: 'Cobertura por AP',    unit: 'm²', val: coverage, set: setCoverage, placeholder: 'ej: 110' },
           ].map(({ label, unit, val, set, placeholder }) => (
             <div key={label}>
               <label style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>{label}</label>
@@ -601,10 +599,10 @@ function ApCalc({ onClose }: { onClose: () => void }) {
                 <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>APs necesarios</div>
               </div>
               <div style={{ flex: 1, fontSize: 12, color: 'var(--muted)', borderLeft: '1px solid var(--line)', paddingLeft: 16 }}>
-                <div>Cobertura por AP: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{Math.round(apAreaEff)} m²</b></div>
-                <div style={{ marginTop: 5 }}>Cobertura total: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{Math.round(apCount * apAreaEff)} m²</b></div>
+                <div>Cobertura por AP: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{coverageNum} m²</b></div>
+                <div style={{ marginTop: 5 }}>Cobertura total: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{Math.round(apCount * coverageNum)} m²</b></div>
                 <div style={{ marginTop: 5, fontSize: 11, color: 'var(--accent-strong)' }}>
-                  Fórmula: ⌈{areaNum} ÷ (π·{rangeNum}²·{effNum.toFixed(2)})⌉
+                  Fórmula: ⌈{areaNum} ÷ {coverageNum}⌉
                 </div>
               </div>
             </div>
@@ -616,7 +614,7 @@ function ApCalc({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ marginTop: 12, fontSize: 11, color: 'var(--dim)', textAlign: 'center' }}>
-          La eficiencia real varía según obstáculos, interferencia y altura de instalación.
+          Un AP estándar cubre 70-150 m² en interiores y 150-200+ m² en espacios abiertos o exteriores. Ajusta la cobertura según obstáculos y materiales del lugar.
         </div>
         </div>
       </div>
@@ -660,15 +658,17 @@ export default function FAQ() {
         {/* Quick reference strip */}
         <div className="stat-row" style={{ marginBottom: 28 }}>
           {[
-            { icon: Icons.clock,    val: '20 días',     label: 'para recibir el equipo' },
-            { icon: Icons.database, val: 'Hasta 6 TB',  label: 'de datos por plan' },
-            { icon: Icons.alert,    val: '60/80/100%',  label: 'alertas automáticas' },
-            { icon: Icons.mail,     val: 'Viernes',     label: 'reporte semanal de TI' },
+            { icon: Icons.clock,    val: '20 días',     label: 'para recibir el equipo',    color: 'var(--cyan)' },
+            { icon: Icons.database, val: 'Hasta 6 TB',  label: 'de datos por plan',          color: ACCENT },
+            { icon: Icons.alert,    val: '60/80/100%',  label: 'alertas automáticas',        color: 'var(--risk)' },
+            { icon: Icons.mail,     val: 'Viernes',     label: 'reporte semanal de TI',      color: 'var(--warn)' },
           ].map((item) => (
-            <div key={item.val} className="stat-card">
-              <IconBadge icon={item.icon} size={32} />
-              <div className="mono stat-card-value" style={{ marginTop: 10 }}>{item.val}</div>
-              <div className="stat-card-sub">{item.label}</div>
+            <div key={item.val} className="stat-card" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <IconBadge icon={item.icon} size={46} color={item.color} />
+              <div style={{ minWidth: 0 }}>
+                <div className="mono stat-card-value" style={{ color: item.color }}>{item.val}</div>
+                <div className="stat-card-sub">{item.label}</div>
+              </div>
             </div>
           ))}
         </div>
