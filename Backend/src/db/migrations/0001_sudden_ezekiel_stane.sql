@@ -41,26 +41,48 @@ CREATE TABLE IF NOT EXISTS "starlink_user_terminals" (
 	"synced_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "starlink_user_terminals_starlink_account_id_user_terminal_id_unique" UNIQUE("starlink_account_id","user_terminal_id")
 );
---> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "role" varchar(20) DEFAULT 'admin' NOT NULL;--> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "starlink_data_usage" ADD CONSTRAINT "starlink_data_usage_starlink_account_id_starlink_accounts_id_fk" FOREIGN KEY ("starlink_account_id") REFERENCES "public"."starlink_accounts"("id") ON DELETE cascade ON UPDATE no action;
+
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS role varchar(20) DEFAULT 'admin' NOT NULL;
+
+DO $$
+BEGIN
+    ALTER TABLE starlink_data_usage
+    ADD CONSTRAINT fk_starlink_data_usage_account
+    FOREIGN KEY (starlink_account_id)
+    REFERENCES public.starlink_accounts(id)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION;
 EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "starlink_tokens" ADD CONSTRAINT "starlink_tokens_starlink_account_id_starlink_accounts_id_fk" FOREIGN KEY ("starlink_account_id") REFERENCES "public"."starlink_accounts"("id") ON DELETE cascade ON UPDATE no action;
+    WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+    ALTER TABLE starlink_tokens
+    ADD CONSTRAINT fk_starlink_tokens_account
+    FOREIGN KEY (starlink_account_id)
+    REFERENCES public.starlink_accounts(id)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION;
 EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "starlink_user_terminals" ADD CONSTRAINT "starlink_user_terminals_starlink_account_id_starlink_accounts_id_fk" FOREIGN KEY ("starlink_account_id") REFERENCES "public"."starlink_accounts"("id") ON DELETE cascade ON UPDATE no action;
+    WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+    ALTER TABLE starlink_user_terminals
+    ADD CONSTRAINT fk_starlink_user_terminals_account
+    FOREIGN KEY (starlink_account_id)
+    REFERENCES public.starlink_accounts(id)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION;
 EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_sl_usage_obra" ON "starlink_data_usage" USING btree ("obra_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_sl_usage_service_line" ON "starlink_data_usage" USING btree ("service_line_number","fetched_at");--> statement-breakpoint
+    WHEN duplicate_object THEN NULL;
+END
+$$;
+CREATE INDEX IF NOT EXISTS "idx_sl_usage_obra" ON "starlink_data_usage" USING btree ("obra_id");
+CREATE INDEX IF NOT EXISTS "idx_sl_usage_service_line" ON "starlink_data_usage" USING btree ("service_line_number","fetched_at");
 CREATE INDEX IF NOT EXISTS "idx_sl_terminals_obra" ON "starlink_user_terminals" USING btree ("obra_id");

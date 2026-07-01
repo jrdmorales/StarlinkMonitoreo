@@ -63,6 +63,11 @@ export async function runStarlinkSyncForAllAccounts(): Promise<{ synced: number;
   let synced = 0;
   let failed = 0;
 
+  if (accounts.length === 0) {
+    console.warn('[StarlinkSync] 0 cuentas Starlink en DB — revisar STARLINK_ACCOUNTS/STARLINK_ENCRYPTION_KEY en el entorno.');
+    return { synced, failed };
+  }
+
   for (const account of accounts) {
     try {
       await syncUserTerminals(account.obraId, account);

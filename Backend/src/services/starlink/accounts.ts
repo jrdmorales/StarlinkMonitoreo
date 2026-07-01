@@ -30,7 +30,10 @@ interface EnvAccount {
 export async function seedAccountFromEnv(): Promise<void> {
   const { STARLINK_ACCOUNTS, STARLINK_ENCRYPTION_KEY } = config;
 
-  if (!STARLINK_ACCOUNTS) return;
+  if (!STARLINK_ACCOUNTS) {
+    console.warn('[Starlink] STARLINK_ACCOUNTS no configurada — 0 cuentas Starlink registradas, sync no tendrá nada que sincronizar.');
+    return;
+  }
 
   if (!STARLINK_ENCRYPTION_KEY) {
     console.warn('[Starlink] STARLINK_ENCRYPTION_KEY no configurada — no se puede guardar credenciales.');

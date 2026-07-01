@@ -65,7 +65,9 @@ export function startScheduler(): void {
   }
 
   // Starlink API directa — solo si la clave de cifrado está configurada
-  if (process.env.STARLINK_ENCRYPTION_KEY && cron.validate(config.STARLINK_SYNC_CRON)) {
+  if (!process.env.STARLINK_ENCRYPTION_KEY) {
+    console.warn('[Scheduler] STARLINK_ENCRYPTION_KEY no configurada — sync Starlink desactivado.');
+  } else if (process.env.STARLINK_ENCRYPTION_KEY && cron.validate(config.STARLINK_SYNC_CRON)) {
     cron.schedule(config.STARLINK_SYNC_CRON, async () => {
       console.info('[Scheduler] Iniciando sync Starlink...');
       try {
