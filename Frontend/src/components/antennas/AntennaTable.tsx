@@ -50,7 +50,7 @@ export default function AntennaTable({ antennas, histories, onSelect, selected, 
           ))}
         </div>
       </div>
-      <div className="table-scroll">
+      <div className="table-scroll table-scroll-y">
         <table className="atable">
           <thead>
             <tr>
@@ -60,7 +60,7 @@ export default function AntennaTable({ antennas, histories, onSelect, selected, 
               <th>Uso vs. límite</th>
               {th('consumed',  'Consumo', 'r')}
               {th('daysLeft',  'Días rest.', 'r')}
-              <th className="r">Historial</th>
+              <th className="r hist-col">Historial</th>
             </tr>
           </thead>
           <tbody>
@@ -79,7 +79,7 @@ export default function AntennaTable({ antennas, histories, onSelect, selected, 
                   <td className="usage-cell"><UsageBar pct={a.usagePct} status={a.status} /></td>
                   <td className="r mono">{fmtGB1(a.consumed)}<span className="cell-dim"> / {a.limitGb}</span></td>
                   <td className="r"><span className="days" data-low={a.daysLeft <= 7}>{a.daysLeft} d</span></td>
-                  <td className="r"><Sparkline data={hist} accent={accent} w={88} h={28} /></td>
+                  <td className="r hist-col"><Sparkline data={hist} accent={accent} w={88} h={28} /></td>
                 </tr>
               );
             })}

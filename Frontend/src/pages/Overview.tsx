@@ -90,16 +90,16 @@ export default function Overview() {
           </div>
           <div style={{ display: 'grid', gap: 13 }}>
             {sortedObras.map((o) => (
-              <div key={o.key} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ width: 110, fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.label}</span>
-                <div style={{ flex: 1, background: 'var(--track)', borderRadius: 99, height: 9 }}>
+              <div key={o.key} className="dist-row">
+                <span className="dist-label">{o.label}</span>
+                <div className="dist-track">
                   <div style={{
                     width: `${Math.min(o.usagePct, 100)}%`, height: '100%', borderRadius: 99,
                     background: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--accent)',
                     transition: 'width .8s cubic-bezier(.4,0,.2,1)',
                   }} />
                 </div>
-                <span className="mono" style={{ width: 54, textAlign: 'right', fontSize: 12.5, fontWeight: 700, color: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--text)' }}>
+                <span className="mono dist-value" style={{ color: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--text)' }}>
                   {fmtPct(o.usagePct)}
                 </span>
               </div>

@@ -42,8 +42,8 @@ export default function ObraDetail() {
       <div className="page-header-row" style={{ marginBottom: 22 }}>
         <div>
           <div className="page-eyebrow">Obra · {obra.key}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
-            <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.022em' }}>{obra.label}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
+            <h1 className="obra-title">{obra.label}</h1>
             <StatusBadge status={obra.status}>
               {obra.riskCount > 0 ? `${obra.riskCount} en riesgo` : obra.warnCount > 0 ? `${obra.warnCount} en advertencia` : 'Todo en orden'}
             </StatusBadge>

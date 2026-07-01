@@ -128,7 +128,7 @@ export default function Antenas() {
     <Shell title="Antenas">
       {toast && (
         <div style={{
-          position: 'fixed', top: 20, right: 20, zIndex: 1000,
+          position: 'fixed', top: 20, right: 20, zIndex: 1000, maxWidth: 'calc(100vw - 40px)',
           background: toast.type === 'ok' ? 'var(--ok-bg)' : 'var(--risk-bg)',
           color:      toast.type === 'ok' ? 'var(--ok)'    : 'var(--risk)',
           border:    `1px solid ${toast.type === 'ok' ? 'var(--ok)' : 'var(--risk)'}`,

@@ -93,17 +93,17 @@ export default function Consumo() {
         <h3 style={{ marginBottom: 18 }}>Consumo por obra (GB)</h3>
         <div style={{ display: 'grid', gap: 13 }}>
           {sortedObras.map((o) => (
-            <div key={o.key} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span style={{ width: 110, fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.label}</span>
-              <div style={{ flex: 1, background: 'var(--track)', borderRadius: 99, height: 11 }}>
+            <div key={o.key} className="dist-row">
+              <span className="dist-label">{o.label}</span>
+              <div className="dist-track" style={{ height: 11 }}>
                 <div style={{
                   width: `${(o.consumed / maxConsumed) * 100}%`, height: '100%', borderRadius: 99,
                   background: o.status === 'risk' ? 'var(--risk)' : o.status === 'warn' ? 'var(--warn)' : 'var(--accent)',
                   transition: 'width .8s cubic-bezier(.4,0,.2,1)',
                 }} />
               </div>
-              <span className="mono" style={{ width: 90, textAlign: 'right', fontSize: 12.5, fontWeight: 700 }}>{fmtGB1(o.consumed)}</span>
-              <span className="mono" style={{ width: 50, textAlign: 'right', fontSize: 12, color: 'var(--dim)' }}>{fmtPct(o.usagePct)}</span>
+              <span className="mono dist-value-gb">{fmtGB1(o.consumed)}</span>
+              <span className="mono dist-value" style={{ color: 'var(--dim)', fontWeight: 600 }}>{fmtPct(o.usagePct)}</span>
             </div>
           ))}
         </div>

@@ -165,6 +165,7 @@ body {
 .page-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; color: var(--dim); text-transform: uppercase; }
 .page-header h1 { margin: 7px 0 0; font-size: 27px; font-weight: 800; letter-spacing: -.022em; }
 .page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.obra-title { margin: 0; font-size: 27px; font-weight: 800; letter-spacing: -.022em; }
 
 .back {
   display: inline-flex; align-items: center; gap: 7px;
@@ -199,6 +200,12 @@ body {
 .pill { background: var(--risk-bg); color: var(--risk); font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 99px; }
 
 .grid-2 { display: grid; grid-template-columns: 1.7fr 1fr; gap: 16px; margin-bottom: 26px; }
+
+.dist-row { display: flex; align-items: center; gap: 14px; }
+.dist-label { width: 110px; flex: none; font-size: 12.5px; font-weight: 600; color: var(--muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dist-track { flex: 1; min-width: 0; background: var(--track); border-radius: 99px; height: 9px; }
+.dist-value { width: 54px; flex: none; text-align: right; font-size: 12.5px; font-weight: 700; }
+.dist-value-gb { width: 90px; flex: none; text-align: right; font-size: 12.5px; font-weight: 700; }
 
 .chart-wrap { position: relative; }
 .area-svg { width: 100%; display: block; }
@@ -277,8 +284,13 @@ body {
 .empty.wide { grid-column: 1 / -1; }
 
 .detail-layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; margin-top: 16px; align-items: start; }
+.alerts-layout { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+.alerts-list-scroll { max-height: 70vh; overflow-y: auto; }
+.alerts-preview-frame { height: 65vh; }
 
 .table-scroll { overflow-x: auto; margin: 0 -22px -20px; padding: 0 22px; }
+.table-scroll-y { max-height: 560px; overflow-y: auto; }
+.table-scroll-y thead th { position: sticky; top: 0; background: var(--panel); z-index: 1; }
 .atable { width: 100%; border-collapse: collapse; }
 .atable th { text-align: left; color: var(--muted); font-size: 12px; font-weight: 600; padding: 0 14px 12px; border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; white-space: nowrap; }
 .atable th.r { text-align: right; }
@@ -363,11 +375,24 @@ body {
 .report-status.ok { color: var(--accent-strong); }
 .report-status.error { color: var(--risk); }
 
+/* ── Laptop 11"-13" (~1194-1400px): mantiene tabla + panel lateral uno al lado
+   del otro, pero achica la tabla (menos padding, sin sparkline) para que la
+   columna Consumo no quede tapada por el panel de detalle. */
+@media (max-width: 1400px) {
+  .detail-layout { grid-template-columns: 1.6fr 1.1fr; gap: 12px; }
+  .atable th, .atable td { padding: 9px 8px; font-size: 12.5px; }
+  .usage-cell { width: 90px; min-width: 76px; }
+  .cell-name { max-width: 130px; }
+  .hist-col { display: none; }
+}
+
 /* ── Tablet ──────────────────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
-  .grid-2, .detail-layout, .settings-grid { grid-template-columns: 1fr; }
-  .kpi-row, .stat-row, .report-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2, .detail-layout, .settings-grid, .alerts-layout { grid-template-columns: 1fr; }
+  .kpi-row, .stat-row { grid-template-columns: repeat(2, 1fr); }
   .detail { position: static; }
+  .alerts-list-scroll { max-height: 40vh; }
+  .alerts-preview-frame { height: 50vh; }
 }
 
 /* ── Mobile sidebar → bottom nav ─────────────────────────────────────────── */
@@ -407,9 +432,10 @@ body {
 
   .topbar-new { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
   .topbar-search { width: 100%; order: 3; }
-  .page-header h1 { font-size: 22px; }
+  .page-header h1, .obra-title { font-size: 22px; }
 
-  .kpi-row, .stat-row, .report-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .kpi-row, .stat-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .report-grid { grid-template-columns: 1fr; gap: 10px; }
 
   .panel { padding: 16px; }
   .panel-head { flex-wrap: wrap; gap: 10px; }
@@ -423,15 +449,21 @@ body {
 
   .atable th, .atable td { padding: 10px 8px; font-size: 12px; }
   .cell-name { max-width: 140px; }
+
+  .dist-row { gap: 8px; }
+  .dist-label { width: 74px; font-size: 11.5px; }
+  .dist-value, .dist-value-gb { width: auto; font-size: 12px; }
 }
 
 /* ── Small mobile ─────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .kpi-row, .stat-row, .report-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kpi-row, .stat-row { grid-template-columns: 1fr 1fr; gap: 8px; }
   .kpi-value { font-size: 24px; }
   .kpi { padding: 14px 14px; }
+  .stat-card { padding: 12px; }
+  .stat-card-value { font-size: 20px; }
 
-  .page-header h1 { font-size: 20px; }
+  .page-header h1, .obra-title { font-size: 20px; }
 
   .mgmt-form.antenna, .mgmt-form.obra { grid-template-columns: 1fr; }
   .mgmt-form.antenna > *, .mgmt-form.obra > * { grid-column: span 1 !important; }

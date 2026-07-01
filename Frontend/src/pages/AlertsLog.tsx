@@ -73,7 +73,7 @@ export default function AlertsLog() {
       )}
 
       {!isLoading && (data?.alerts.length ?? 0) > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 16, alignItems: 'start' }}>
+        <div className="alerts-layout">
 
           {/* ── Lista de alertas ───────────────────────────────────────── */}
           <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
@@ -97,7 +97,7 @@ export default function AlertsLog() {
                 ))}
               </div>
             </div>
-              <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+              <div className="alerts-list-scroll">
                 {grouped.map(([date, entries]) => {
                   const seen = new Set<string>();
                   const deduped = entries.filter((e) => {
@@ -196,14 +196,14 @@ export default function AlertsLog() {
               </div>
 
               {!selected && (
-                <div className="empty-detail" style={{ minHeight: 500 }}>
+                <div className="empty-detail alerts-preview-frame">
                   <Icons.alert size={28} stroke="var(--muted)" />
                   <p>Selecciona una alerta para ver cómo llegó el correo</p>
                 </div>
               )}
 
               {selected && previewLoading && (
-                <div className="empty-detail" style={{ minHeight: 500 }}>
+                <div className="empty-detail alerts-preview-frame">
                   <span style={{ color: 'var(--muted)', fontSize: 13 }}>Generando vista previa...</span>
                 </div>
               )}
@@ -215,7 +215,8 @@ export default function AlertsLog() {
                   </div>
                   <iframe
                     srcDoc={previewData.html}
-                    style={{ width: '100%', height: '65vh', border: 'none', display: 'block' }}
+                    className="alerts-preview-frame"
+                    style={{ width: '100%', border: 'none', display: 'block' }}
                     title="Email preview"
                     sandbox="allow-same-origin"
                   />
