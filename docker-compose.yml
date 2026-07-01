@@ -20,7 +20,7 @@ services:
       context: ./Backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://starlink:${POSTGRES_PASSWORD:-starlink_dev}@postgres:5432/starlink
+      DATABASE_URL: postgresql://starlink:${POSTGRES_PASSWORD}@postgres:5432/starlink
       NODE_ENV: production
       PORT: 3000
       NEWRELIC_API_KEY: ${NEWRELIC_API_KEY}
