@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import Sidebar from '../components/layout/Sidebar';
+import Shell from '../components/layout/Shell';
 import { Icons } from '../components/ui/Icons';
 
 const PDF_URL = '/Procedimiento_Compra_Contratacion_Starlink_ENTEL%206.pdf';
@@ -366,11 +366,11 @@ function SectionCard({ id: _id, num, color, Illus, title, summary, onClick }: ty
       style={{
         background: hovered ? alpha(color, 0.08) : 'var(--panel)',
         border: `1px solid ${hovered ? alpha(color, 0.4) : 'var(--line)'}`,
-        borderRadius: 18, padding: '22px 20px 18px',
+        borderRadius: 'var(--r)', padding: '22px 20px 18px',
         cursor: 'pointer', textAlign: 'left', font: 'inherit', color: 'var(--text)',
         display: 'flex', flexDirection: 'column', gap: 14,
         transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
-        boxShadow: hovered ? `0 12px 32px ${alpha(color, 0.18)}` : 'none',
+        boxShadow: hovered ? `0 12px 32px ${alpha(color, 0.18)}` : 'var(--shadow)',
         transition: 'all 0.2s ease',
         position: 'relative', overflow: 'hidden',
       }}
@@ -498,15 +498,9 @@ function Modal({ section, onClose, onPrev, onNext, hasPrev, hasNext }: {
             </div>
 
             <button
+              className="btn-icon"
               onClick={onClose}
-              style={{
-                width: 36, height: 36, borderRadius: 99, flexShrink: 0,
-                background: 'var(--panel-2)', border: '1px solid var(--line)',
-                color: 'var(--muted)', cursor: 'pointer', display: 'grid', placeItems: 'center',
-                font: 'inherit', transition: 'background 0.15s, color 0.15s',
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--panel-2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--muted)'; }}
+              style={{ width: 36, height: 36, borderRadius: 99, flexShrink: 0 }}
               aria-label="Cerrar"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -528,20 +522,7 @@ function Modal({ section, onClose, onPrev, onNext, hasPrev, hasNext }: {
             background: 'var(--panel-2)',
             flexShrink: 0,
           }}>
-            <button
-              onClick={onPrev}
-              disabled={!hasPrev}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7,
-                background: 'none', border: '1px solid var(--line)', borderRadius: 10,
-                padding: '8px 14px', font: 'inherit', fontSize: 13, fontWeight: 600,
-                color: hasPrev ? 'var(--text)' : 'var(--dim)',
-                cursor: hasPrev ? 'pointer' : 'not-allowed',
-                opacity: hasPrev ? 1 : 0.4, transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => { if (hasPrev) (e.currentTarget as HTMLButtonElement).style.background = 'var(--panel)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; }}
-            >
+            <button className="btn-ghost sm" onClick={onPrev} disabled={!hasPrev}>
               ← Anterior
             </button>
 
@@ -556,17 +537,13 @@ function Modal({ section, onClose, onPrev, onNext, hasPrev, hasNext }: {
             </div>
 
             <button
+              className="btn-primary"
               onClick={onNext}
               disabled={!hasNext}
               style={{
-                display: 'flex', alignItems: 'center', gap: 7,
-                background: hasNext ? section.color : 'none',
+                background: hasNext ? section.color : 'var(--panel-2)',
                 border: `1px solid ${hasNext ? section.color : 'var(--line)'}`,
-                borderRadius: 10, padding: '8px 14px',
-                font: 'inherit', fontSize: 13, fontWeight: 600,
                 color: hasNext ? '#fff' : 'var(--dim)',
-                cursor: hasNext ? 'pointer' : 'not-allowed',
-                opacity: hasNext ? 1 : 0.4, transition: 'opacity 0.15s',
               }}
             >
               Siguiente →
@@ -605,9 +582,8 @@ function ApCalc({ onClose }: { onClose: () => void }) {
       position: 'fixed', inset: 0, zIndex: 900,
       background: 'oklch(0 0 0 / 0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center',
     }} onClick={onClose}>
-      <div style={{
-        background: 'var(--panel)', border: '1px solid var(--line)',
-        borderRadius: 18, padding: '28px 28px 24px', width: 420, maxWidth: '95vw',
+      <div className="panel" style={{
+        padding: '28px 28px 24px', width: 420, maxWidth: '95vw',
         boxShadow: '0 24px 60px oklch(0 0 0 / 0.5)',
       }} onClick={(e) => e.stopPropagation()}>
 
@@ -617,7 +593,7 @@ function ApCalc({ onClose }: { onClose: () => void }) {
             <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Calculadora de APs</div>
             <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3 }}>Estimación de puntos de acceso por cobertura</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: 4, lineHeight: 1 }}>✕</button>
+          <button className="btn-icon" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 
         {/* presets */}
@@ -629,15 +605,15 @@ function ApCalc({ onClose }: { onClose: () => void }) {
               return (
                 <button key={p.label} onClick={() => { setApRange(p.range); setEfficiency(p.eff); }}
                   style={{
-                    background: active ? 'oklch(0.65 0.19 252 / 0.15)' : 'var(--bg-2)',
+                    background: active ? 'var(--accent-soft)' : 'var(--bg-2)',
                     color: 'var(--text)',
-                    border: `1px solid ${active ? 'oklch(0.65 0.19 252 / 0.5)' : 'var(--line)'}`,
+                    border: `1px solid ${active ? 'var(--accent)' : 'var(--line)'}`,
                     borderRadius: 9, padding: '9px 11px',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
                   }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ color: active ? 'oklch(0.65 0.19 252)' : 'var(--text)' }}>{p.label}</span>
-                    {active && <span style={{ fontSize: 9, background: 'oklch(0.65 0.19 252)', color: '#fff', borderRadius: 99, padding: '1px 6px', fontWeight: 700, letterSpacing: '0.05em' }}>ACTIVO</span>}
+                    <span style={{ color: active ? 'var(--accent-strong)' : 'var(--text)' }}>{p.label}</span>
+                    {active && <span style={{ fontSize: 9, background: 'var(--accent)', color: '#fff', borderRadius: 99, padding: '1px 6px', fontWeight: 700, letterSpacing: '0.05em' }}>ACTIVO</span>}
                   </div>
                   <div style={{ fontSize: 10.5, color: 'var(--muted)', fontFamily: 'monospace', marginBottom: 5 }}>r={p.range}m · {p.eff}% ef.</div>
                   <div style={{ fontSize: 11, color: 'var(--dim)', fontWeight: 400, lineHeight: 1.4 }}>{p.desc}</div>
@@ -658,12 +634,12 @@ function ApCalc({ onClose }: { onClose: () => void }) {
               <label style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>{label}</label>
               <div style={{ display: 'flex', gap: 0 }}>
                 <input
+                  className="field-input"
                   type="number" min="0" value={val} placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
                   style={{
-                    flex: 1, background: 'var(--bg-2)', border: '1px solid var(--line)',
+                    flex: 1, background: 'var(--bg-2)',
                     borderRight: 'none', borderRadius: '8px 0 0 8px',
-                    padding: '8px 12px', color: 'var(--text)', font: 'inherit', fontSize: 13, outline: 'none',
                   }}
                 />
                 <span style={{
@@ -678,20 +654,20 @@ function ApCalc({ onClose }: { onClose: () => void }) {
 
         {/* result */}
         <div style={{
-          background: apCount !== null ? 'oklch(0.65 0.19 252 / 0.12)' : 'var(--bg-2)',
-          border: `1px solid ${apCount !== null ? 'oklch(0.65 0.19 252 / 0.35)' : 'var(--line)'}`,
+          background: apCount !== null ? 'var(--accent-soft)' : 'var(--bg-2)',
+          border: `1px solid ${apCount !== null ? 'var(--accent)' : 'var(--line)'}`,
           borderRadius: 12, padding: '16px 18px',
         }}>
           {apCount !== null ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ textAlign: 'center', minWidth: 64 }}>
-                <div style={{ fontFamily: 'monospace', fontSize: 40, fontWeight: 900, color: 'oklch(0.65 0.19 252)', lineHeight: 1 }}>{apCount}</div>
+                <div style={{ fontFamily: 'monospace', fontSize: 40, fontWeight: 900, color: 'var(--accent-strong)', lineHeight: 1 }}>{apCount}</div>
                 <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>APs necesarios</div>
               </div>
               <div style={{ flex: 1, fontSize: 12, color: 'var(--muted)', borderLeft: '1px solid var(--line)', paddingLeft: 16 }}>
                 <div>Cobertura por AP: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{Math.round(apAreaEff)} m²</b></div>
                 <div style={{ marginTop: 5 }}>Cobertura total: <b style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{Math.round(apCount * apAreaEff)} m²</b></div>
-                <div style={{ marginTop: 5, fontSize: 11, color: 'oklch(0.65 0.19 252)' }}>
+                <div style={{ marginTop: 5, fontSize: 11, color: 'var(--accent-strong)' }}>
                   Fórmula: ⌈{areaNum} ÷ (π·{rangeNum}²·{effNum.toFixed(2)})⌉
                 </div>
               </div>
@@ -724,58 +700,38 @@ export default function FAQ() {
   const nextSection  = useCallback(() => { if (activeIdx < SECTIONS.length - 1) setActiveId(SECTIONS[activeIdx + 1].id); }, [activeIdx]);
 
   return (
-    <div className="app">
-      <Sidebar />
-      <div className="content" style={{ paddingTop: 28 }}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 28 }}>
-          <div>
-            <div className="crumb">Referencia técnica</div>
-            <h1 style={{ margin: '4px 0 6px', fontSize: 26, letterSpacing: '-0.025em' }}>Procedimientos Starlink</h1>
-            <p style={{ margin: 0, color: 'var(--muted)', fontSize: 13 }}>Todo lo que necesitas saber. Haz click en cualquier tarjeta para ver el detalle.</p>
-          </div>
-          <div style={{ display: 'flex', gap: 10, flexShrink: 0, alignSelf: 'flex-start' }}>
-            <button onClick={() => setShowCalc(true)} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'var(--panel)', color: 'var(--text)', textDecoration: 'none',
-              border: '1px solid var(--line)',
-              borderRadius: 12, padding: '11px 20px', fontFamily: 'inherit',
-              fontWeight: 700, fontSize: 13.5, cursor: 'pointer',
-            }}>
-              <Icons.spark size={16} />
-              Calc. APs
-            </button>
-            <a href={PDF_URL} download="Procedimiento_Starlink_ENTEL.pdf" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'var(--accent)', color: '#fff', textDecoration: 'none',
-              borderRadius: 12, padding: '11px 20px', fontFamily: 'inherit',
-              fontWeight: 700, fontSize: 13.5,
-              boxShadow: '0 4px 16px oklch(0.66 0.17 252 / 0.3)',
-            }}>
-              <Icons.download size={16} stroke="#fff" />
-              Descargar PDF
-            </a>
-          </div>
-          {showCalc && <ApCalc onClose={() => setShowCalc(false)} />}
+    <Shell title="FAQ">
+      <div className="page-header-row" style={{ marginBottom: 28 }}>
+        <div className="page-header" style={{ marginBottom: 0 }}>
+          <div className="page-eyebrow">Referencia técnica</div>
+          <h1>Procedimientos Starlink</h1>
+          <p style={{ margin: '6px 0 0', color: 'var(--muted)', fontSize: 13 }}>Todo lo que necesitas saber. Haz click en cualquier tarjeta para ver el detalle.</p>
         </div>
+        <div style={{ display: 'flex', gap: 10, flexShrink: 0, alignSelf: 'flex-start', flexWrap: 'wrap' }}>
+          <button className="btn-ghost" onClick={() => setShowCalc(true)}>
+            <Icons.spark size={16} />
+            Calc. APs
+          </button>
+          <a href={PDF_URL} download="Procedimiento_Starlink_ENTEL.pdf" className="btn-primary" style={{ textDecoration: 'none' }}>
+            <Icons.download size={16} stroke="#fff" />
+            Descargar PDF
+          </a>
+        </div>
+        {showCalc && <ApCalc onClose={() => setShowCalc(false)} />}
+      </div>
 
         {/* Quick reference strip */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 28 }}>
+        <div className="stat-row" style={{ marginBottom: 28 }}>
           {[
             { icon: '📅', val: '20 días',     label: 'para recibir el equipo',   color: C.blue   },
             { icon: '💾', val: 'Hasta 6 TB',  label: 'de datos por plan',        color: C.violet },
             { icon: '🔔', val: '60/80/100%',  label: 'alertas automáticas',      color: C.amber  },
             { icon: '📧', val: 'Viernes',     label: 'reporte semanal de TI',    color: C.green  },
           ].map((item) => (
-            <div key={item.val} style={{
-              background: 'var(--panel)', border: '1px solid var(--line)',
-              borderTop: `3px solid ${item.color}`, borderRadius: 14,
-              padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 4,
-            }}>
+            <div key={item.val} className="stat-card" style={{ borderTop: `3px solid ${item.color}` }}>
               <span style={{ fontSize: 22 }}>{item.icon}</span>
-              <span style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 16, fontWeight: 800, color: item.color }}>{item.val}</span>
-              <span style={{ fontSize: 11.5, color: 'var(--muted)' }}>{item.label}</span>
+              <div className="mono stat-card-value" style={{ color: item.color, marginTop: 6 }}>{item.val}</div>
+              <div className="stat-card-sub">{item.label}</div>
             </div>
           ))}
         </div>
@@ -786,9 +742,6 @@ export default function FAQ() {
             <SectionCard key={s.id} {...s} onClick={() => openSection(s.id)} />
           ))}
         </div>
-
-        <div style={{ height: 48 }} />
-      </div>
 
       {/* Modal */}
       {activeSection && (
@@ -801,6 +754,6 @@ export default function FAQ() {
           hasNext={activeIdx < SECTIONS.length - 1}
         />
       )}
-    </div>
+    </Shell>
   );
 }

@@ -140,6 +140,12 @@ body {
 }
 .topbar-crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--dim); }
 .topbar-crumb strong { color: var(--text); font-weight: 700; }
+.topbar-back-btn {
+  display: grid; place-items: center; width: 28px; height: 28px; flex: none;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--panel);
+  color: var(--muted); cursor: pointer; transition: .15s; margin-right: 2px;
+}
+.topbar-back-btn:hover { color: var(--text); background: var(--panel-2); }
 .topbar-tools { display: flex; align-items: center; gap: 10px; }
 .topbar-search {
   display: flex; align-items: center; gap: 9px; background: var(--panel);
@@ -166,14 +172,6 @@ body {
 .page-header h1 { margin: 7px 0 0; font-size: 27px; font-weight: 800; letter-spacing: -.022em; }
 .page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .obra-title { margin: 0; font-size: 27px; font-weight: 800; letter-spacing: -.022em; }
-
-.back {
-  display: inline-flex; align-items: center; gap: 7px;
-  width: auto; height: auto; border-radius: 10px; border: 1px solid var(--line);
-  background: var(--panel); color: var(--muted); cursor: pointer; padding: 8px 13px;
-  font: inherit; font-size: 12.5px; font-weight: 700; transition: .15s; margin-bottom: 18px;
-}
-.back:hover { color: var(--text); background: var(--panel-2); }
 
 /* ── Cards ───────────────────────────────────────────────────────────────── */
 .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
@@ -357,7 +355,7 @@ body {
 .field-input:focus { border-color: var(--accent); }
 
 /* ── Theme toggle / settings ─────────────────────────────────────────────── */
-.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
 .settings-card-title { font-size: 15px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 4px; }
 .settings-card-sub { font-size: 12.5px; color: var(--dim); margin-bottom: 18px; }
 .settings-field { margin-bottom: 14px; }

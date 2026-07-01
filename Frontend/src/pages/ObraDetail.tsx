@@ -36,9 +36,7 @@ export default function ObraDetail() {
   }
 
   return (
-    <Shell title={obra.label}>
-      <button className="back" onClick={() => navigate('/obras')}><Icons.back size={15} />Volver</button>
-
+    <Shell title={obra.label} onBack={() => navigate('/obras')}>
       <div className="page-header-row" style={{ marginBottom: 22 }}>
         <div>
           <div className="page-eyebrow">Obra · {obra.key}</div>

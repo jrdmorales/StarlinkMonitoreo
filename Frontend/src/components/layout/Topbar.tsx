@@ -1,24 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icons } from '../ui/Icons';
 import { useObras } from '../../hooks/useObras';
 import { useTheme } from '../../hooks/useTheme';
 
-interface Props { title: string }
+interface Props { title: string; onBack?: () => void }
 
-export default function Topbar({ title }: Props) {
+export default function Topbar({ title, onBack }: Props) {
   const navigate = useNavigate();
   const { data } = useObras();
   const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState('');
-  const [now, setNow] = useState(() => new Date());
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(id);
-  }, []);
-
-  const timeLabel = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  const lastUpdatedLabel = useMemo(() => {
+    if (!data?.lastUpdated) return 'Sin datos';
+    const d = new Date(data.lastUpdated);
+    const time = d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    const isToday = d.toDateString() === new Date().toDateString();
+    const dateStr = isToday ? 'hoy' : d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+    return `${time} · ${dateStr}`;
+  }, [data?.lastUpdated]);
 
   function onSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,6 +45,11 @@ export default function Topbar({ title }: Props) {
   return (
     <div className="topbar-new">
       <div className="topbar-crumb">
+        {onBack && (
+          <button type="button" className="topbar-back-btn" aria-label="Volver" title="Volver" onClick={onBack}>
+            <Icons.back size={15} />
+          </button>
+        )}
         <span>Starlink Obras</span>
         <Icons.chevron size={13} />
         <strong>{title}</strong>
@@ -57,9 +63,9 @@ export default function Topbar({ title }: Props) {
             onChange={(e) => setQuery(e.target.value)}
           />
         </form>
-        <div className="topbar-clock">
+        <div className="topbar-clock" title="Última actualización de datos">
           <Icons.clock size={15} />
-          {timeLabel}
+          {lastUpdatedLabel}
         </div>
         <button
           type="button"
