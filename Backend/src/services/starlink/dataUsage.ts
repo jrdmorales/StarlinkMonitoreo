@@ -22,7 +22,7 @@ interface DataUsageResponse {
 }
 
 export async function fetchAndPersistDataUsage(
-  obraId:             number,
+  obraId:             number | null,
   account:            StarlinkAccountCreds,
   serviceLineNumbers: string[],
 ): Promise<number> {

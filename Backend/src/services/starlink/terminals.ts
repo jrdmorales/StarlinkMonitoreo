@@ -18,7 +18,7 @@ interface UserTerminalResponse {
 }
 
 export async function syncUserTerminals(
-  obraId:  number,
+  obraId:  number | null,
   account: StarlinkAccountCreds,
 ): Promise<number> {
   const data = await starlinkFetch<UserTerminalResponse>(account, '/user-terminals');

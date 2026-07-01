@@ -10,7 +10,7 @@ import { fetchAndPersistDataUsage } from '../../../services/starlink/dataUsage.j
 import { runStarlinkSyncForAllAccounts } from '../../../jobs/starlinkSync.js';
 
 const accountSchema = z.object({
-  obraId:            z.number().int().positive(),
+  obraId:            z.number().int().positive().optional(),
   starlinkAccountId: z.string().min(1),
   clientId:          z.string().min(1),
   clientSecret:      z.string().min(1),
@@ -52,10 +52,10 @@ const starlinkAdminRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     const [account] = await db.insert(starlinkAccounts)
-      .values({ obraId, starlinkAccountId, clientId, clientSecretEncrypted })
+      .values({ obraId: obraId ?? null, starlinkAccountId, clientId, clientSecretEncrypted })
       .onConflictDoUpdate({
-        target: [starlinkAccounts.obraId, starlinkAccounts.starlinkAccountId],
-        set:    { clientId, clientSecretEncrypted, updatedAt: new Date() },
+        target: starlinkAccounts.starlinkAccountId,
+        set:    { obraId: obraId ?? null, clientId, clientSecretEncrypted, updatedAt: new Date() },
       })
       .returning({
         id:                starlinkAccounts.id,

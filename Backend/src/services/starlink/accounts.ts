@@ -17,7 +17,7 @@ export async function getAllStarlinkAccounts() {
 }
 
 interface EnvAccount {
-  obraId:            number;
+  obraId?:           number;
   starlinkAccountId: string;
   clientId:          string;
   clientSecret:      string;
@@ -50,25 +50,28 @@ export async function seedAccountFromEnv(): Promise<void> {
   }
 
   for (const acc of accounts) {
-    if (!acc.obraId || !acc.starlinkAccountId || !acc.clientId || !acc.clientSecret) {
+    if (!acc.starlinkAccountId || !acc.clientId || !acc.clientSecret) {
       console.warn(`[Starlink] Cuenta incompleta omitida:`, acc);
       continue;
+    }
+    if (acc.obraId === undefined) {
+      console.info(`[Starlink] Cuenta ${acc.starlinkAccountId} sin obraId — se sincroniza sin obra asignada, asignar luego en /api/admin/antennas.`);
     }
 
     const clientSecretEncrypted = encrypt(acc.clientSecret);
 
     await db.insert(starlinkAccounts)
       .values({
-        obraId:                acc.obraId,
+        obraId:                acc.obraId ?? null,
         starlinkAccountId:     acc.starlinkAccountId,
         clientId:              acc.clientId,
         clientSecretEncrypted,
       })
       .onConflictDoUpdate({
-        target: [starlinkAccounts.obraId, starlinkAccounts.starlinkAccountId],
-        set:    { clientId: acc.clientId, clientSecretEncrypted, updatedAt: new Date() },
+        target: starlinkAccounts.starlinkAccountId,
+        set:    { obraId: acc.obraId ?? null, clientId: acc.clientId, clientSecretEncrypted, updatedAt: new Date() },
       });
 
-    console.info(`[Starlink] Cuenta ${acc.starlinkAccountId} (obraId ${acc.obraId}) registrada desde .env`);
+    console.info(`[Starlink] Cuenta ${acc.starlinkAccountId} (obraId ${acc.obraId ?? 'sin asignar'}) registrada desde .env`);
   }
 }

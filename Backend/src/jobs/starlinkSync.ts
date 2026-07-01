@@ -12,7 +12,7 @@ import type { StarlinkUserTerminalRow } from '../db/starlink-schema.js';
  * Mapea terminales y consumo Starlink al modelo principal (antennas + consumption_logs)
  * para que el UI existente los muestre sin cambios.
  */
-async function bridgeToMainTables(obraId: number, terminals: StarlinkUserTerminalRow[]): Promise<void> {
+async function bridgeToMainTables(obraId: number | null, terminals: StarlinkUserTerminalRow[]): Promise<void> {
   const now = new Date();
 
   for (const terminal of terminals) {
@@ -25,11 +25,13 @@ async function bridgeToMainTables(obraId: number, terminals: StarlinkUserTermina
       limitGb: 2000,
     });
 
+    // Filtrar por starlinkAccountId, no obraId — obraId puede ser null
+    // (cuenta sin obra asignada todavía) y no identifica la cuenta de forma única.
     const [usage] = await db.select()
       .from(starlinkDataUsage)
       .where(and(
         eq(starlinkDataUsage.serviceLineNumber, terminal.serviceLineNumber),
-        eq(starlinkDataUsage.obraId, obraId),
+        eq(starlinkDataUsage.starlinkAccountId, terminal.starlinkAccountId),
         gt(starlinkDataUsage.billingCycleEnd, new Date()),
       ))
       .orderBy(desc(starlinkDataUsage.billingCycleStart))

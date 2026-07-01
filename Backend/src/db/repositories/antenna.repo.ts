@@ -26,7 +26,7 @@ export async function findAntennaById(id: number): Promise<AntennaRow | null> {
  */
 export async function upsertAntenna(data: {
   code:    string;
-  obraId?: number;
+  obraId?: number | null;
   name?:   string;
   limitGb: number;
 }): Promise<AntennaRow> {

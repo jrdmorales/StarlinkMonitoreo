@@ -9,14 +9,21 @@ import {
 /** Credenciales OAuth2 del service account Starlink por obra */
 export const starlinkAccounts = pgTable('starlink_accounts', {
   id:                    uuid('id').primaryKey().defaultRandom(),
-  obraId:                integer('obra_id').notNull(),
+  // Nullable a propósito: la cuenta puede sincronizarse sin obra asignada
+  // todavía — las antenas resultantes quedan "sin obra" y se asignan
+  // manualmente después en /api/admin/antennas.
+  obraId:                integer('obra_id'),
   starlinkAccountId:     text('starlink_account_id').notNull(), // "ACC-xxxx"
   clientId:              text('client_id').notNull(),
   clientSecretEncrypted: text('client_secret_encrypted').notNull(), // AES-256-GCM, nunca plano
   createdAt:             timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:             timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
-  obraAccountUnique: unique().on(t.obraId, t.starlinkAccountId),
+  // Único por starlinkAccountId solo (no obraId+starlinkAccountId): con
+  // obraId nullable, Postgres trata cada NULL como distinto en una unique
+  // compuesta, así que ON CONFLICT nunca matchearía y el seed desde env
+  // insertaría filas duplicadas en cada restart.
+  accountUnique: unique().on(t.starlinkAccountId),
 }));
 
 /** Cache de access tokens — una fila viva por cuenta Starlink */
@@ -34,7 +41,7 @@ export const starlinkTokens = pgTable('starlink_tokens', {
 /** Terminales Starlink (snapshot, se resincroniza periódicamente) */
 export const starlinkUserTerminals = pgTable('starlink_user_terminals', {
   id:                uuid('id').primaryKey().defaultRandom(),
-  obraId:            integer('obra_id').notNull(),
+  obraId:            integer('obra_id'),
   starlinkAccountId: uuid('starlink_account_id').notNull()
     .references(() => starlinkAccounts.id, { onDelete: 'cascade' }),
   userTerminalId:    text('user_terminal_id').notNull(),
@@ -54,7 +61,7 @@ export const starlinkUserTerminals = pgTable('starlink_user_terminals', {
  */
 export const starlinkDataUsage = pgTable('starlink_data_usage', {
   id:                uuid('id').primaryKey().defaultRandom(),
-  obraId:            integer('obra_id').notNull(),
+  obraId:            integer('obra_id'),
   starlinkAccountId: uuid('starlink_account_id').notNull()
     .references(() => starlinkAccounts.id, { onDelete: 'cascade' }),
   serviceLineNumber: text('service_line_number').notNull(),
