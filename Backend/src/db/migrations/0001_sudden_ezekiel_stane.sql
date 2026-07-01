@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS "starlink_data_usage" (
 	"starlink_account_id" uuid NOT NULL,
 	"service_line_number" text NOT NULL,
 	"billing_cycle_start" timestamp with time zone,
+	"billing_cycle_end" timestamp with time zone,
 	"data_amount_gb" double precision NOT NULL,
 	"raw_response" jsonb,
 	"fetched_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -44,6 +45,9 @@ CREATE TABLE IF NOT EXISTS "starlink_user_terminals" (
 
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS role varchar(20) DEFAULT 'admin' NOT NULL;
+
+ALTER TABLE starlink_data_usage
+ADD COLUMN IF NOT EXISTS billing_cycle_end timestamp with time zone;
 
 DO $$
 BEGIN
