@@ -11,19 +11,24 @@ Panel de monitoreo de consumo de antenas Starlink para obras de construcción. P
 | Backend | Node.js · Fastify · Drizzle ORM |
 | Base de datos | PostgreSQL |
 | Frontend | React · Vite · TanStack Query |
-| Datos | New Relic GraphQL API |
+| Datos | New Relic GraphQL API · Starlink API directa (opcional, por obra) |
 | Email | Nodemailer · SMTP interno |
 
 ---
 
 ## Funcionalidades
 
-- **Dashboard** — Consumo por obra y antena en tiempo real
-- **Detalle por obra** — Gráfico histórico, proyección de consumo, días restantes del ciclo
+- **Resumen** — KPIs globales, tendencia de consumo del ciclo, uso global (gauge), distribución por obra, antenas en alerta
+- **Obras** — Listado con % de uso, consumo y estado; gestión (crear/editar nombre y email/activar-desactivar) para sesiones con rol admin
+- **Antenas** — Listado global con historial (sparkline) y detalle de consumo por antena; gestión (crear/editar límite y obra/activar-desactivar) para sesiones con rol admin
+- **Detalle de obra** — Gráfico histórico de la obra, tabla de antenas, detalle de antena seleccionada, proyección de consumo
+- **Consumo** — Analítica: tendencia global del ciclo y consumo por obra
+- **Alertas** — Log de alertas enviadas con vista previa del email
+- **Reportes** — Envío manual de reporte por email (por obra o por antena puntual)
+- **Ajustes** — Tema claro/oscuro, datos de cuenta, sincronización manual con New Relic/Starlink
 - **Alertas automáticas** — Email al 60%, 80% y 100% de consumo (no se repite por ciclo)
 - **Reporte semanal** — Email por obra cada viernes con resumen completo
-- **Panel de administración** — Gestión de obras, antenas y límites de datos
-- **Log de alertas** — Historial de alertas enviadas
+- **Roles** — `admin` (lectura + escritura) y `viewer` (solo lectura); el dashboard es navegable sin sesión, las acciones de escritura requieren login
 - **Procedimientos FAQ** — Guía interactiva de compra y contratación Starlink
 
 ---
@@ -96,7 +101,15 @@ SMTP_FROM=Starlink Control <starlink_consumo@excon.cl>
 
 # Auth admin
 JWT_SECRET=<mínimo 32 caracteres aleatorios>
+
+# Starlink API directa (opcional — sync alternativo/complementario a New Relic)
+STARLINK_ENCRYPTION_KEY=<64 chars hex — cifra client_secret en reposo>
+STARLINK_SYNC_CRON=0 */6 * * *
+# JSON array, una cuenta Starlink por obra
+STARLINK_ACCOUNTS=[{"obraId":1,"starlinkAccountId":"ACC-XXXXX","clientId":"...","clientSecret":"..."}]
 ```
+
+Detalle de la integración Starlink (schema, cliente HTTP, jobs): ver [`starlink-integration.md`](./starlink-integration.md).
 
 ### 3. Frontend
 
@@ -112,7 +125,7 @@ npm run dev            # http://localhost:5173
 
 El ciclo de consumo corre del **día 14 al 13** de cada mes (según configuración ENTEL). El backend:
 
-1. Consulta New Relic cada 1 horas
+1. Consulta New Relic (y, si está configurado, Starlink directo) según `FETCH_CRON` / `STARLINK_SYNC_CRON`
 2. Persiste snapshots en `consumption_logs`
 3. Evalúa umbrales → envía alertas si corresponde
 4. Cada viernes 08:00 envía reporte semanal por obra
