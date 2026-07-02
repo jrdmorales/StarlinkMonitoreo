@@ -23,6 +23,9 @@ services:
       DATABASE_URL: postgresql://starlink:${POSTGRES_PASSWORD}@postgres:5432/starlink
       NODE_ENV: production
       PORT: 3000
+      # Fija el TZ del proceso a Chile — sin esto, Docker usa UTC por defecto y
+      # los cálculos de ciclo de facturación (día 14 a día 13) se corren hasta 4h.
+      TZ: America/Santiago
       NEWRELIC_API_KEY: ${NEWRELIC_API_KEY}
       NEWRELIC_ACCOUNT_ID: ${NEWRELIC_ACCOUNT_ID:-7041272}
       JWT_SECRET: ${JWT_SECRET:-}

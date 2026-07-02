@@ -1,14 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Icons } from '../ui/Icons';
 import UsageBar from '../ui/UsageBar';
-import Sparkline from '../charts/Sparkline';
 import { STATUS_CONFIG } from '../../lib/constants';
-import { fmtGB1, fmtPct } from '../../lib/formatters';
-import type { AntennaDto, HistoryPoint } from '../../types/index';
+import { fmtGB, fmtGB1, fmtPct } from '../../lib/formatters';
+import type { AntennaDto } from '../../types/index';
 
 interface Props {
   antennas:  AntennaDto[];
-  histories: Record<string, HistoryPoint[]>;
   onSelect:  (a: AntennaDto) => void;
   selected:  string | null;
   showObraColumn?: boolean;
@@ -17,7 +15,7 @@ interface Props {
 type SortKey = 'code' | 'usagePct' | 'consumed' | 'daysLeft';
 interface SortState { key: SortKey; dir: 1 | -1 }
 
-export default function AntennaTable({ antennas, histories, onSelect, selected, showObraColumn }: Props) {
+export default function AntennaTable({ antennas, onSelect, selected, showObraColumn }: Props) {
   const [sort, setSort]   = useState<SortState>({ key: 'usagePct', dir: -1 });
   const [filter, setFilter] = useState<'all' | 'risk' | 'warn' | 'ok'>('all');
 
@@ -60,14 +58,11 @@ export default function AntennaTable({ antennas, histories, onSelect, selected, 
               <th>Uso vs. límite</th>
               {th('consumed',  'Consumo', 'r')}
               {th('daysLeft',  'Días rest.', 'r')}
-              <th className="r hist-col">Historial</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((a) => {
-              const st     = STATUS_CONFIG[a.status];
-              const accent = a.status === 'risk' ? 'var(--risk)' : a.status === 'warn' ? 'var(--warn)' : 'var(--accent)';
-              const hist   = histories[a.code] ?? [];
+              const st = STATUS_CONFIG[a.status];
               return (
                 <tr key={a.code} className={selected === a.code ? 'sel' : ''} onClick={() => onSelect(a)}>
                   <td>
@@ -77,9 +72,8 @@ export default function AntennaTable({ antennas, histories, onSelect, selected, 
                   {showObraColumn && <td style={{ fontSize: 13, fontWeight: 700 }}>{a.obraLabel}</td>}
                   <td><span className="mono" style={{ color: st.color, fontWeight: 700 }}>{fmtPct(a.usagePct)}</span></td>
                   <td className="usage-cell"><UsageBar pct={a.usagePct} status={a.status} /></td>
-                  <td className="r mono">{fmtGB1(a.consumed)}<span className="cell-dim"> / {a.limitGb}</span></td>
+                  <td className="r mono">{fmtGB1(a.consumed)}<span className="cell-dim"> / {fmtGB(a.limitGb)}</span></td>
                   <td className="r"><span className="days" data-low={a.daysLeft <= 7}>{a.daysLeft} d</span></td>
-                  <td className="r hist-col"><Sparkline data={hist} accent={accent} w={88} h={28} /></td>
                 </tr>
               );
             })}

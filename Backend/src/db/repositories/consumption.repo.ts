@@ -59,6 +59,22 @@ export async function getLatestConsumptionByAntenna(
 }
 
 /**
+ * El snapshot más reciente de cada antena en `antennaIds`, en una sola query
+ * (DISTINCT ON en vez de N round-trips secuenciales). Usado por
+ * getObrasWithAntennas(), que antes hacía una query por antena.
+ */
+export async function getLatestConsumptionForAntennaIds(
+  antennaIds: number[],
+): Promise<ConsumptionLogRow[]> {
+  if (antennaIds.length === 0) return [];
+  return db
+    .selectDistinctOn([consumptionLogs.antennaId])
+    .from(consumptionLogs)
+    .where(inArray(consumptionLogs.antennaId, antennaIds))
+    .orderBy(consumptionLogs.antennaId, desc(consumptionLogs.sampledAt));
+}
+
+/**
  * Todos los snapshots de una antena dentro del ciclo activo, en orden cronológico.
  * Usado para construir el historial de gráficos.
  */

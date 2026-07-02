@@ -6,11 +6,12 @@ import { findAllObras } from '../db/repositories/obra.repo.js';
 import { findAntennaByCode, upsertAntenna } from '../db/repositories/antenna.repo.js';
 import {
   insertConsumptionLog,
-  getLatestConsumptionByAntenna,
+  getLatestConsumptionForAntennaIds,
   getConsumptionInCycle,
   getConsumptionInCycleForAntennaIds,
 } from '../db/repositories/consumption.repo.js';
 import type { AntennaDto, ObraDto, HistoryPoint, GlobalKpis } from '../types/index.js';
+import type { ConsumptionLogRow } from '../db/schema.js';
 
 function statusFor(pct: number): 'ok' | 'warn' | 'risk' {
   if (pct >= RISK_THRESHOLD) return 'risk';
@@ -65,13 +66,13 @@ export async function refreshConsumption(): Promise<{ saved: number; skipped: nu
 }
 
 /** Construye el DTO completo de una antena a partir de su último snapshot */
-async function buildAntennaDto(
+function buildAntennaDto(
   antenna: { id: number; code: string; obraId: number | null; name: string | null; limitGb: number },
   obraKey:   string,
   obraLabel: string,
   cycle:     ReturnType<typeof getCurrentCycle>,
-): Promise<AntennaDto | null> {
-  const latest = await getLatestConsumptionByAntenna(antenna.id);
+  latest:    ConsumptionLogRow | undefined,
+): AntennaDto | null {
   if (!latest) return null;
 
   const consumed = Number(latest.consumedGb);
@@ -99,15 +100,20 @@ async function buildAntennaDto(
 
 /** Retorna todas las obras activas con sus antenas y datos de consumo actuales */
 export async function getObrasWithAntennas(): Promise<ObraDto[]> {
-  const cycle       = getCurrentCycle();
+  const cycle        = getCurrentCycle();
   const obrasWithAnt = await findAllObras();
+
+  const allAntennaIds = obrasWithAnt.flatMap((o) => o.antennas.map((a) => a.id));
+  const latestRows    = await getLatestConsumptionForAntennaIds(allAntennaIds);
+  const latestByAntennaId = new Map(latestRows.map((r) => [r.antennaId, r]));
+
   const result: ObraDto[] = [];
 
   for (const obra of obrasWithAnt) {
     const antennaDtos: AntennaDto[] = [];
 
     for (const ant of obra.antennas) {
-      const dto = await buildAntennaDto(ant, obra.key, obra.label, cycle);
+      const dto = buildAntennaDto(ant, obra.key, obra.label, cycle, latestByAntennaId.get(ant.id));
       if (dto) antennaDtos.push(dto);
     }
 
@@ -152,7 +158,7 @@ export async function getAntennaHistory(code: string): Promise<HistoryPoint[]> {
   // Agrupar por fecha: tomar el snapshot con mayor consumedGb del día
   const byDate = new Map<string, number>();
   for (const log of logs) {
-    const day      = new Date(log.sampledAt).toISOString().slice(0, 10);
+    const day      = formatDateISO(new Date(log.sampledAt));
     const consumed = Number(log.consumedGb);
     const current  = byDate.get(day) ?? -1;
     if (consumed > current) byDate.set(day, consumed);
@@ -195,7 +201,7 @@ export async function getAggregateHistory(obraKey?: string): Promise<HistoryPoin
   const perAntennaByDate = new Map<number, Map<string, number>>();
   const allDates = new Set<string>();
   for (const log of logs) {
-    const day = new Date(log.sampledAt).toISOString().slice(0, 10);
+    const day = formatDateISO(new Date(log.sampledAt));
     allDates.add(day);
 
     let byDate = perAntennaByDate.get(log.antennaId);

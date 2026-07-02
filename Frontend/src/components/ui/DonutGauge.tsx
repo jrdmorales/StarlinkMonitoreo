@@ -2,17 +2,20 @@ import { RISK_THRESHOLD, WARN_THRESHOLD, STATUS_CONFIG } from '../../lib/constan
 import { fmtPct } from '../../lib/formatters';
 
 interface Props {
-  pct:    number;
-  size?:  number;
+  pct:     number;
+  status?: 'ok' | 'warn' | 'risk';
+  size?:   number;
   stroke?: number;
-  label?: string;
-  sub?:   string;
+  label?:  string;
+  sub?:    string;
 }
 
-export default function DonutGauge({ pct, size = 168, stroke = 16, label, sub }: Props) {
+export default function DonutGauge({ pct, status, size = 168, stroke = 16, label, sub }: Props) {
   const r   = (size - stroke) / 2;
   const c   = 2 * Math.PI * r;
-  const st  = STATUS_CONFIG[pct >= RISK_THRESHOLD ? 'risk' : pct >= WARN_THRESHOLD ? 'warn' : 'ok'];
+  // Usa el status del server si se provee (mismo criterio que StatusBadge/UsageBar
+  // en el resto de la UI) — solo recalcula desde pct cuando no hay uno (ej. KPI agregado).
+  const st  = STATUS_CONFIG[status ?? (pct >= RISK_THRESHOLD ? 'risk' : pct >= WARN_THRESHOLD ? 'warn' : 'ok')];
   const off = c * (1 - Math.min(pct, 100) / 100);
 
   // Tamaños de texto proporcionales al diámetro — a tamaños chicos el font-size fijo

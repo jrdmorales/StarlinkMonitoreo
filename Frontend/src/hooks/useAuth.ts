@@ -22,10 +22,5 @@ export function useAuth() {
     }
   }
 
-  function logout(): void {
-    token.clear();
-    window.location.href = '/login';
-  }
-
-  return { login, logout, loading, error, isAuthenticated: !!token.get() };
+  return { login, loading, error };
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Shell from '../components/layout/Shell';
 import Kpi from '../components/ui/Kpi';
@@ -16,20 +16,36 @@ import type { AntennaDto } from '../types/index';
 export default function ObraDetail() {
   const { key }    = useParams<{ key: string }>();
   const navigate   = useNavigate();
-  const { data }   = useObras();
+  const { data, isLoading, error } = useObras();
   const obra        = data?.obras.find((o) => o.key === key);
 
-  const defaultSel  = obra?.antennas.find((a) => a.status === 'risk') ?? obra?.antennas[0] ?? null;
-  const [selected, setSelected] = useState<AntennaDto | null>(defaultSel);
+  const [selected, setSelected] = useState<AntennaDto | null>(null);
+
+  // Auto-selecciona la antena más riesgosa cuando `obra` llega (carga fría o
+  // deep-link directo: useObras() aún no había resuelto en el primer render).
+  useEffect(() => {
+    if (selected || !obra) return;
+    setSelected(obra.antennas.find((a) => a.status === 'risk') ?? obra.antennas[0] ?? null);
+  }, [obra, selected]);
 
   const { data: histData, isLoading: histLoading } = useAntennaHistory(selected?.code ?? null);
   const { data: obraHistData, isLoading: obraHistLoading } = useAggregateHistory(key);
+
+  if (error) {
+    return (
+      <Shell title="Detalle de obra">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+          <span style={{ color: 'var(--risk)' }}>Error al cargar datos.</span>
+        </div>
+      </Shell>
+    );
+  }
 
   if (!obra) {
     return (
       <Shell title="Detalle de obra">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
-          <span style={{ color: 'var(--muted)' }}>{data ? `Obra '${key}' no encontrada` : 'Cargando...'}</span>
+          <span style={{ color: 'var(--muted)' }}>{isLoading ? 'Cargando...' : `Obra '${key}' no encontrada`}</span>
         </div>
       </Shell>
     );
@@ -71,7 +87,6 @@ export default function ObraDetail() {
       <div className="detail-layout">
         <AntennaTable
           antennas={obra.antennas}
-          histories={{}}
           onSelect={(a) => setSelected(a)}
           selected={selected?.code ?? null}
         />

@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { requireAdmin } from '../../middleware/auth.js';
 import { db } from '../../../db/client.js';
+import { obras } from '../../../db/schema.js';
 import { starlinkAccounts, starlinkDataUsage, starlinkUserTerminals } from '../../../db/starlink-schema.js';
 import { encrypt } from '../../../lib/crypto.js';
 import { syncUserTerminals, getTerminalsForAccount } from '../../../services/starlink/terminals.js';
@@ -42,6 +43,13 @@ const starlinkAdminRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(400).send({ error: 'Datos inválidos', details: body.error.flatten() });
     }
     const { obraId, starlinkAccountId, clientId, clientSecret } = body.data;
+
+    // starlink-schema.ts omite la FK a propósito, pero un obraId inválido acá
+    // crearía una cuenta huérfana que sincroniza sin destino y sin error visible.
+    if (obraId !== undefined) {
+      const [obra] = await db.select({ id: obras.id }).from(obras).where(eq(obras.id, obraId)).limit(1);
+      if (!obra) return reply.code(404).send({ error: `Obra con id ${obraId} no encontrada` });
+    }
 
     let clientSecretEncrypted: string;
     try {

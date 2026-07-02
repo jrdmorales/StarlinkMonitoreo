@@ -4,7 +4,7 @@ import StatusBadge from '../ui/StatusBadge';
 import DonutGauge from '../ui/DonutGauge';
 import AreaChart from '../charts/AreaChart';
 import { fmtGB, fmtGB1, fmtDateShort } from '../../lib/formatters';
-import { api, token } from '../../api/client';
+import { api, getTokenPayload } from '../../api/client';
 import type { AntennaDto, HistoryPoint } from '../../types/index';
 
 interface Props {
@@ -17,7 +17,7 @@ type SendState = 'idle' | 'sending' | 'ok' | 'error';
 
 export default function AntennaDetail({ antenna, history, loading }: Props) {
   const [alertState, setAlertState] = useState<SendState>('idle');
-  const isAdmin = !!token.get();
+  const isAdmin = getTokenPayload()?.role === 'admin';
 
   async function sendAlert() {
     if (!antenna) return;
@@ -53,7 +53,7 @@ export default function AntennaDetail({ antenna, history, loading }: Props) {
       </div>
 
       <div className="detail-gauge">
-        <DonutGauge pct={antenna.usagePct} size={140} stroke={13} label="de uso" />
+        <DonutGauge pct={antenna.usagePct} status={antenna.status} size={140} stroke={13} label="de uso" />
       </div>
       <div className="detail-gauge-cap mono">
         {fmtGB1(antenna.consumed)} <span>/ {fmtGB(antenna.limitGb)}</span>

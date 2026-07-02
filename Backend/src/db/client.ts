@@ -11,5 +11,11 @@ const pool = new Pool({
   connectionTimeoutMillis: 5_000,
 });
 
+// Sin este listener, un error en un cliente idle (ej. DB reiniciada) se convierte
+// en excepción no capturada y tumba el proceso entero.
+pool.on('error', (err) => {
+  console.error('[DB] Error inesperado en pool de conexiones:', err);
+});
+
 export const db = drizzle(pool, { schema: { ...schema, ...starlinkSchema } });
 export type DB = typeof db;

@@ -67,8 +67,13 @@ export async function checkAndSendAlerts(): Promise<AlertResult> {
       }
     }
 
-    skipped += obras.flatMap((o) => o.antennas)
-      .filter((a) => a.usagePct >= threshold).length - obraAlerts.size;
+    // skipped = antenas sobre el umbral menos las que efectivamente se agregaron
+    // a un email nuevo este ciclo (no obraAlerts.size, que cuenta obras, no antenas).
+    const totalOverThreshold = obras.flatMap((o) => o.antennas)
+      .filter((a) => a.usagePct >= threshold).length;
+    const newlyAlerted = Array.from(obraAlerts.values())
+      .reduce((s, { antennas }) => s + antennas.length, 0);
+    skipped += totalOverThreshold - newlyAlerted;
   }
 
   return { sent, skipped };

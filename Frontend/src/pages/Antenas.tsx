@@ -70,7 +70,6 @@ export default function Antenas() {
       <div className="detail-layout">
         <AntennaTable
           antennas={allAntennas}
-          histories={{}}
           onSelect={(a) => setSelected(a)}
           selected={effectiveSelected?.code ?? null}
           showObraColumn

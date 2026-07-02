@@ -18,8 +18,8 @@ const GENERAL_ITEMS = [
 export default function Sidebar() {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const isAdmin   = !!token.get();
   const user      = getTokenPayload();
+  const isAdmin   = user?.role === 'admin';
   const { data }  = useObras();
   const alertCount = data ? data.kpis.riskCount + data.kpis.warnCount : 0;
 

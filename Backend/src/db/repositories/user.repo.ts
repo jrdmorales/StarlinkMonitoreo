@@ -47,3 +47,9 @@ export async function countUsers(): Promise<number> {
   const [{ value }] = await db.select({ value: count() }).from(users);
   return Number(value);
 }
+
+/** Cantidad de usuarios con rol admin — usado para evitar dejar el sistema sin admins */
+export async function countAdmins(): Promise<number> {
+  const [{ value }] = await db.select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+  return Number(value);
+}

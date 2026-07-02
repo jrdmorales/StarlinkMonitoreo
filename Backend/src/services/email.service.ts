@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import type { AntennaDto, ObraDto } from '../types/index.js';
-import { config } from '../lib/config.js';
+import { config, alertThresholds } from '../lib/config.js';
 
 // Transporter lazy-init: se crea solo cuando hay configuración SMTP
 let _transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
@@ -137,11 +137,19 @@ const CLR = {
   sans:    "Arial,'Helvetica Neue',sans-serif",
 };
 
-const THRESHOLD_CFG: Record<number, { label: string; hdrBg: string; accent: string }> = {
-  60:  { label: 'Primer aviso — 60%',        hdrBg: '#15803d', accent: '#bbf7d0' },
-  80:  { label: 'Advertencia — 80%',          hdrBg: '#b45309', accent: '#fde68a' },
-  100: { label: '¡Límite alcanzado — 100%!',  hdrBg: '#b91c1c', accent: '#fecaca' },
-};
+/**
+ * Estilo del header del email según la posición del umbral cruzado dentro de
+ * ALERT_THRESHOLDS (configurable) — no valores fijos 60/80/100, para que un
+ * operador que configure umbrales distintos (ej. 50,70,90) siga viendo el
+ * tier correcto (primer aviso / advertencia / límite alcanzado).
+ */
+function tierFor(threshold: number): { label: string; hdrBg: string; accent: string } {
+  const max = Math.max(...alertThresholds);
+  const min = Math.min(...alertThresholds);
+  if (threshold >= max) return { label: `¡Límite alcanzado — ${threshold}%!`, hdrBg: '#b91c1c', accent: '#fecaca' };
+  if (threshold <= min) return { label: `Primer aviso — ${threshold}%`,       hdrBg: '#15803d', accent: '#bbf7d0' };
+  return                       { label: `Advertencia — ${threshold}%`,        hdrBg: '#b45309', accent: '#fde68a' };
+}
 
 function statusColor(s: 'ok' | 'warn' | 'risk'): string {
   return s === 'risk' ? CLR.risk : s === 'warn' ? CLR.warn : CLR.ok;
@@ -268,7 +276,7 @@ export function buildAlertEmailHtml(params: {
   cycleStart: string;
   cycleEnd:   string;
 }): string {
-  const tCfg       = THRESHOLD_CFG[params.threshold] ?? THRESHOLD_CFG[100];
+  const tCfg       = tierFor(params.threshold);
   const count      = params.antennas.length;
   const sc         = statusColor(params.obra.status);
   const reportDate = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -369,9 +377,11 @@ export function buildAlertEmailHtml(params: {
 }
 
 export function buildAlertSubject(obraLabel: string, threshold: number, _count: number): string {
-  if (threshold >= 100) return `🔴 URGENTE - Límite Alcanzado - ${obraLabel} - Superó el 100% de consumo`;
-  if (threshold >= 80)  return `🟠 Advertencia - ${obraLabel} - Superó el ${threshold}% de consumo`;
-  return                       `🟡 Primer aviso - ${obraLabel} - Superó el ${threshold}% de consumo`;
+  const max = Math.max(...alertThresholds);
+  const min = Math.min(...alertThresholds);
+  if (threshold >= max) return `🔴 URGENTE - Límite Alcanzado - ${obraLabel} - Superó el ${threshold}% de consumo`;
+  if (threshold <= min) return `🟡 Primer aviso - ${obraLabel} - Superó el ${threshold}% de consumo`;
+  return                       `🟠 Advertencia - ${obraLabel} - Superó el ${threshold}% de consumo`;
 }
 
 // ── Reporte semanal ───────────────────────────────────────────────────────────

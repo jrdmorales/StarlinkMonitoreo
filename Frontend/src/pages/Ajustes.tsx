@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Shell from '../components/layout/Shell';
 import { Icons } from '../components/ui/Icons';
-import { api, token, getTokenPayload } from '../api/client';
+import { api, getTokenPayload } from '../api/client';
 import { useTheme } from '../hooks/useTheme';
 import { useObras } from '../hooks/useObras';
 
@@ -16,8 +16,8 @@ interface AdminAntenna {
 }
 
 export default function Ajustes() {
-  const isAdmin = !!token.get();
   const user = getTokenPayload();
+  const isAdmin = user?.role === 'admin';
   const { theme, setTheme } = useTheme();
   const { data } = useObras();
   const qc = useQueryClient();
@@ -157,6 +157,7 @@ export default function Ajustes() {
     mutationFn: (id: number) => api.delete(`/admin/antennas/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-antennas'] });
+      qc.invalidateQueries({ queryKey: ['obras'] });
       showToast('ok', 'Antena desactivada');
     },
     onError: (err) => showToast('err', err instanceof Error ? err.message : 'Error'),

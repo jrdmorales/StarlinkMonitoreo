@@ -37,25 +37,31 @@ export default function AlertsLog() {
     return [...new Set(data.alerts.map((a) => a.threshold))].sort((a, b) => a - b);
   }, [data]);
 
-  // Agrupar alertas por fecha de envío
+  // Deduplicar: única combinación (obra, antena, threshold, fecha) en la lista
+  const uniqueKey = (e: AlertLogEntry) =>
+    `${e.obraKey}-${e.antennaCode}-${e.threshold}-${fmtDateTime(e.sentAt).date}`;
+
+  // Agrupar alertas (ya deduplicadas) por fecha de envío
   const grouped = useMemo(() => {
     if (!data?.alerts) return [];
     const filtered = filterThreshold === 'all'
       ? data.alerts
       : data.alerts.filter((a) => a.threshold === filterThreshold);
 
+    const seen = new Set<string>();
     const map = new Map<string, AlertLogEntry[]>();
     for (const entry of filtered) {
-      const key = fmtDateTime(entry.sentAt).date;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(entry);
+      const k = uniqueKey(entry);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      const dateKey = fmtDateTime(entry.sentAt).date;
+      if (!map.has(dateKey)) map.set(dateKey, []);
+      map.get(dateKey)!.push(entry);
     }
     return Array.from(map.entries());
   }, [data, filterThreshold]);
 
-  // Deduplicar: única combinación (obra, threshold, fecha) en la lista
-  const uniqueKey = (e: AlertLogEntry) =>
-    `${e.obraKey}-${e.threshold}-${fmtDateTime(e.sentAt).date}`;
+  const visibleCount = useMemo(() => grouped.reduce((s, [, entries]) => s + entries.length, 0), [grouped]);
 
   return (
     <Shell title="Alertas">
@@ -79,7 +85,7 @@ export default function AlertsLog() {
           <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
             <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>
-                Enviadas ({data?.alerts.length ?? 0})
+                Enviadas ({visibleCount})
               </h3>
               <div className="seg sm">
                 {([['all', 'Todas'] as const, ...availableThresholds.map((t) => [t, `${t}%`] as const)]).map(([v, l]) => (
@@ -99,13 +105,6 @@ export default function AlertsLog() {
             </div>
               <div className="alerts-list-scroll">
                 {grouped.map(([date, entries]) => {
-                  const seen = new Set<string>();
-                  const deduped = entries.filter((e) => {
-                    const k = uniqueKey(e);
-                    if (seen.has(k)) return false;
-                    seen.add(k);
-                    return true;
-                  });
                   return (
                     <div key={date}>
                       <div style={{
@@ -116,7 +115,7 @@ export default function AlertsLog() {
                       }}>
                         {date}
                       </div>
-                      {deduped.map((entry) => {
+                      {entries.map((entry) => {
                         const ts   = getThresholdStyle(entry.threshold);
                         const time = fmtDateTime(entry.sentAt).time;
                         const isSelected =

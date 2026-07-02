@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { requireAdmin } from '../../middleware/auth.js';
 import {
   listUsers, findUserById, createUser,
-  updateUserRole, updateUserPassword, deleteUser, countUsers,
+  updateUserRole, updateUserPassword, deleteUser, countAdmins,
   type UserRole,
 } from '../../../db/repositories/user.repo.js';
 
@@ -99,8 +99,8 @@ const adminUsersRoutes: FastifyPluginAsync = async (fastify) => {
     if (!user) return reply.code(404).send({ error: 'Usuario no encontrado.' });
 
     if (user.role === 'admin') {
-      const total = await countUsers();
-      if (total <= 1) {
+      const admins = await countAdmins();
+      if (admins <= 1) {
         return reply.code(400).send({ error: 'No puedes eliminar el único admin.' });
       }
     }

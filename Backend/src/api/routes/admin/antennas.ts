@@ -77,12 +77,19 @@ const adminAntennasRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(404).send({ error: `Obra '${body.data.obraKey}' no encontrada` });
     }
 
-    const antenna = await upsertAntenna({
+    let antenna = await upsertAntenna({
       code:    body.data.code,
       obraId:  obra.id,
       name:    body.data.name,
       limitGb: body.data.limitGb,
     });
+
+    // upsertAntenna preserva limitGb en conflicto (protege contra el refresh
+    // automático de New Relic) — pero si el admin lo especificó a propósito
+    // en este endpoint, su valor debe prevalecer.
+    if (antenna.limitGb !== body.data.limitGb) {
+      antenna = (await updateAntennaLimit(antenna.id, body.data.limitGb)) ?? antenna;
+    }
 
     // Reactivar si estaba desactivada
     if (!antenna.active) {

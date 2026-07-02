@@ -25,20 +25,21 @@ const updateSchema = z.object({
 const adminObrasRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.addHook('preHandler', requireAdmin);
 
-  /** Lista todas las obras con conteo de antenas activas */
+  /** Lista todas las obras con conteo de antenas (una sola query agregada, no una por obra) */
   fastify.get('/', async (_req, reply) => {
-    const obraRows = await db.select().from(obras).orderBy(obras.key);
+    const [obraRows, counts] = await Promise.all([
+      db.select().from(obras).orderBy(obras.key),
+      db
+        .select({ obraId: antennas.obraId, value: count() })
+        .from(antennas)
+        .groupBy(antennas.obraId),
+    ]);
 
-    const result = await Promise.all(
-      obraRows.map(async (obra) => {
-        const [{ value: activeCount }] = await db
-          .select({ value: count() })
-          .from(antennas)
-          .where(eq(antennas.obraId, obra.id));
-
-        return { ...obra, antennaCount: Number(activeCount) };
-      }),
-    );
+    const countByObraId = new Map(counts.map((c) => [c.obraId, Number(c.value)]));
+    const result = obraRows.map((obra) => ({
+      ...obra,
+      antennaCount: countByObraId.get(obra.id) ?? 0,
+    }));
 
     return reply.send({ obras: result });
   });

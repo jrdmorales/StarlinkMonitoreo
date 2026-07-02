@@ -38,8 +38,10 @@ export default function Consumo() {
 
   const k = data.kpis;
   const allAntennas = data.obras.flatMap((o) => o.antennas);
-  const remainingDays = allAntennas.length > 0 ? Math.min(...allAntennas.map((a) => a.daysLeft)) : 0;
-  const projectedTotal = k.totalConsumed + stats.dailyAvg * remainingDays;
+  // Suma la proyección de cada antena (ya calculada con su propio ciclo/daysLeft)
+  // en vez de aplicar un único daysLeft de flota al promedio diario agregado —
+  // eso subestimaba el total cuando una antena resetea antes que el resto.
+  const projectedTotal = allAntennas.reduce((s, a) => s + a.projection.projectedTotal, 0);
   const withinLimit = projectedTotal <= k.totalLimit;
 
   const sortedObras = [...data.obras].sort((a, b) => b.consumed - a.consumed);
