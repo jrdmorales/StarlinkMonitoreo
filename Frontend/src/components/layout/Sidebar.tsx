@@ -52,7 +52,7 @@ export default function Sidebar() {
       <div className="sidebar-section-label">Menú</div>
       <nav className="nav">
         {MENU_ITEMS.map((item) => (
-          <NavButton key={item.path} {...item} count={item.path === '/alerts' ? alertCount : undefined} />
+          <NavButton key={item.path} {...item} count={item.path === '/antenas' ? alertCount : undefined} />
         ))}
       </nav>
 
